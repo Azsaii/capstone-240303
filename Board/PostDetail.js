@@ -149,6 +149,7 @@ const PostDetail = ({ route, navigation }) => {
           id: key,
           userEmail: data[key].userEmail,
           comment: data[key].comment,
+          postId: post.id,
         }));
         setCommentList(comments);
       } else setCommentList([]); // 댓글이 없는 경우 빈칸으로 세팅
@@ -183,22 +184,21 @@ const PostDetail = ({ route, navigation }) => {
       return;
     }
 
-    const postRef = ref(
-      database,
-      boardName + '/' + post.id + '/' + 'comments/' + userId
-    );
-
-    set(postRef, {
+    const newComment = {
       id: userId,
       userEmail: userEmail,
       comment: comment,
-    })
-      .then(() => {
-        console.log('Data updated successfully.');
+      postId: post.id,
+    };
+
+    axios
+      .post(serverPath + 'comment', newComment)
+      .then((response) => {
+        console.log('Comments data updated successfully.');
         scrollViewRef.current.scrollToEnd({ animated: true }); // 화면 최하단으로 스크롤 이동
       })
       .catch((error) => {
-        console.error('Data could not be saved.' + error);
+        console.error('Comments data could not be saved.' + error);
       });
 
     setComment(''); // 인풋창 초기화

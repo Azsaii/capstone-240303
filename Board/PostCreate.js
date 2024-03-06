@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
-import { database } from '../firebaseConfig';
-import { ref, set, update } from 'firebase/database';
 
 const styles = StyleSheet.create({
   container: {
@@ -33,67 +31,43 @@ const PostCreate = ({ route, navigation }) => {
 
   // 작성한 글을 db에 반영
   const handleSubmit = () => {
-    // post가 존재하면 수정 모드이므로 기존 경로 사용한다.
-    const path = `${boardName}/${post ? post.id : `${userName}_${Date.now()}`}`;
-    const postRef = ref(database, path);
-
-    console.log('path: ' + path);
+    const postType = post ? 1 : 0; // 직성모드(0), 수정모드(1)
+    const serverPath = 'http://localhost:8080/';
 
     // 새 글 데이터
     const newPost = {
       userEmail: userEmail,
       title: title,
       body: body,
+      type: postType,
     };
-    if (!post) {
-      // 작성 모드인 경우 새로 작성
-      set(postRef, newPost)
-        .then(() => {
-          console.log('Data updated successfully.');
-          // 게시판 화면으로 돌아간다.
+
+    axios
+      .post(serverPath + 'posts', newPost)
+      .then((response) => {
+        console.log('Post data updated successfully.');
+
+        if (post && commentList) {
+          axios
+            .post(serverPath + 'commentList', commentList)
+            .then((response) => {
+              console.log('Comments data updated successfully.');
+            })
+            .catch((error) => {
+              console.error('Comments data could not be saved.' + error);
+            });
+        }
+        // 이전 화면으로 돌아간다.
+        if (post) {
           navigation.navigate('PostDetail', {
             post: newPost,
             boardName: boardName,
           });
-        })
-        .catch((error) => {
-          console.error('Data could not be saved.' + error);
-        });
-    } else {
-      // 수정 모드인 경우 업데이트
-      update(postRef, newPost)
-        .then(() => {
-          console.log('Post data updated successfully.');
-
-          // commentList가 있으면 각 comment를 업데이트
-          if (commentList) {
-            commentList.forEach((comment) => {
-              const commentRef = ref(
-                database,
-                boardName + '/' + post.id + '/' + 'comments/' + comment.id
-              );
-
-              update(commentRef, comment)
-                .then(() => console.log('Comment data updated successfully.'))
-                .catch((error) =>
-                  console.error('Comment data could not be updated.' + error)
-                );
-            });
-          }
-        })
-        .then(() => {
-          // 수정한 글 화면으로 돌아간다.
-          if (post) {
-            navigation.navigate('PostDetail', {
-              post: newPost,
-              boardName: boardName,
-            });
-          } else navigation.navigate('BoardScreen');
-        })
-        .catch((error) => {
-          console.error('Post data could not be updated.' + error);
-        });
-    }
+        } else navigation.navigate('BoardScreen');
+      })
+      .catch((error) => {
+        console.error('Post data could not be saved.' + error);
+      });
   };
 
   // 글 수정 모드일 때 post가 존재하고, 기존 글 내용을 표시한다.
