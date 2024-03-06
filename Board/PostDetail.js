@@ -15,6 +15,7 @@ import { TextInput, Card } from 'react-native-paper';
 import { database } from '../firebaseConfig';
 import { ref, set, remove, onValue, off } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import axios from 'axios';
 
 const styles = StyleSheet.create({
   container: {
@@ -116,6 +117,7 @@ const PostDetail = ({ route, navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
+  const serverPath = 'http://localhost:8080/';
 
   // 뒤로가기 시 게시판으로 이동
   useEffect(() => {
@@ -139,34 +141,52 @@ const PostDetail = ({ route, navigation }) => {
     }
   }, [userEmail]);
 
+  // 240306: 서버에서 아래처럼 response에 id, userEmail등 넣어서 보내줘야한다.
   // 댓글 가져오기
   const fetchComments = () => {
-    const commentsRef = ref(database, boardName + '/' + post.id + '/comments');
-    const listener = onValue(commentsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const comments = Object.keys(data).map((key) => ({
-          id: key,
-          userEmail: data[key].userEmail,
-          comment: data[key].comment,
-          postId: post.id,
-        }));
+    axios.get(serverPath + 'comments', { params: { boardName: boardName, postId: post.postId } })
+      .then((response) => {
+        const comments = response.data;
         setCommentList(comments);
-      } else setCommentList([]); // 댓글이 없는 경우 빈칸으로 세팅
-    });
-    // 이벤트 리스너를 반환
-    return { ref: commentsRef, listener };
+      })
+      .catch((error) => {
+        console.error('Comments data could not be fetched.' + error);
+      });
   };
-
+  
   useEffect(() => {
     // 댓글 가져오기
-    const { ref: commentsRef, listener } = fetchComments();
-
-    // 클린업 함수에서 이벤트 리스너를 제거
-    return () => {
-      off(commentsRef, listener);
-    };
+    fetchComments();
   }, []);
+
+  // 댓글 가져오기
+  // const fetchComments1 = () => {
+  //   const commentsRef = ref(database, boardName + '/' + post.postId + '/comments');
+  //   const listener = onValue(commentsRef, (snapshot) => {
+  //     const data = snapshot.val();
+  //     if (data) {
+  //       const comments = Object.keys(data).map((key) => ({
+  //         id: key,
+  //         userEmail: data[key].userEmail,
+  //         comment: data[key].comment,
+  //         postId: post.postId,
+  //       }));
+  //       setCommentList(comments);
+  //     } else setCommentList([]); // 댓글이 없는 경우 빈칸으로 세팅
+  //   });
+  //   // 이벤트 리스너를 반환
+  //   return { ref: commentsRef, listener };
+  // };
+
+  // useEffect(() => {
+  //   // 댓글 가져오기
+  //   const { ref: commentsRef, listener } = fetchComments();
+
+  //   // 클린업 함수에서 이벤트 리스너를 제거
+  //   return () => {
+  //     off(commentsRef, listener);
+  //   };
+  // }, []);
 
   const scrollViewRef = useRef();
 
@@ -176,19 +196,19 @@ const PostDetail = ({ route, navigation }) => {
       // 댓글 내용이 없으면 저장하지 않음
       return;
     }
-    const userId = userName + '_' + Date.now();
+    const commentId = userName + '_' + Date.now();
 
-    // post와 post.id가 존재하는지 확인
-    if (!post || !post.id) {
-      console.error('Post or post.id is undefined.');
+    // post와 post.postId가 존재하는지 확인
+    if (!post || !post.postId) {
+      console.error('Post or post.postId is undefined.');
       return;
     }
 
     const newComment = {
-      id: userId,
+      commentId: commentId,
       userEmail: userEmail,
       comment: comment,
-      postId: post.id,
+      postId: post.postId,
     };
 
     axios
@@ -215,58 +235,109 @@ const PostDetail = ({ route, navigation }) => {
   };
 
   // 데이터 삭제 요청
-  const removeData = (dataRef) => {
-    remove(dataRef)
-      .then(() => {
-        console.log('Data removed successfully.');
-        navigation.goBack();
-      })
-      .catch((error) => {
-        console.error('Data could not be removed.' + error);
-      });
-  };
+const removeData = (url) => {
+  axios.delete(serverPath + url)
+    .then(() => {
+      console.log('Data removed successfully.');
+      navigation.goBack();
+    })
+    .catch((error) => {
+      console.error('Data could not be removed.' + error);
+    });
+};
 
-  // 삭제 확인 창
-  const removeProcess = (dataRef) => {
-    if (isWeb) {
-      const userConfirmed = window.confirm(
-        '삭제 확인',
-        '정말로 삭제하시겠습니까?'
-      );
-      if (userConfirmed) {
-        removeData(dataRef);
-      }
-    } else {
-      Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
-        {
-          text: '취소',
-          onPress: () => console.log('삭제 취소'),
-          style: 'cancel',
-        },
-        {
-          text: '확인',
-          onPress: () => {
-            removeData(dataRef);
-          },
-        },
-      ]);
+// 삭제 확인 창
+const removeProcess = (url) => {
+  if (isWeb) {
+    const userConfirmed = window.confirm(
+      '삭제 확인',
+      '정말로 삭제하시겠습니까?'
+    );
+    if (userConfirmed) {
+      removeData(url);
     }
-  };
+  } else {
+    Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
+      {
+        text: '취소',
+        onPress: () => console.log('삭제 취소'),
+        style: 'cancel',
+      },
+      {
+        text: '확인',
+        onPress: () => {
+          removeData(url);
+        },
+      },
+    ]);
+  }
+};
 
-  // 글 삭제
-  const handleDelete = () => {
-    const path = `${boardName}/${post.id}`;
-    const postRef = ref(database, path);
-    removeProcess(postRef);
-  };
+// 글 삭제
+const handleDelete = () => {
+  const url = 'posts/' + post.postId;
+  removeProcess(url);
+};
 
-  // 댓글 삭제
-  const handleCommentDelete = (id) => {
-    const path = `${boardName}/${post.id}/comments/${id}`;
-    const commentRef = ref(database, path);
-    removeProcess(commentRef);
-    fetchComments(); // 삭제 후 댓글을 다시 불러옴
-  };
+// 댓글 삭제
+const handleCommentDelete = (id) => {
+  const url = 'comments/' + id;
+  removeProcess(url);
+  fetchComments(); // 삭제 후 댓글을 다시 불러옴
+};
+
+  // 데이터 삭제 요청
+  // const removeData = (dataRef) => {
+  //   remove(dataRef)
+  //     .then(() => {
+  //       console.log('Data removed successfully.');
+  //       navigation.goBack();
+  //     })
+  //     .catch((error) => {
+  //       console.error('Data could not be removed.' + error);
+  //     });
+  // };
+  // 삭제 확인 창
+  // const removeProcess = (dataRef) => {
+  //   if (isWeb) {
+  //     const userConfirmed = window.confirm(
+  //       '삭제 확인',
+  //       '정말로 삭제하시겠습니까?'
+  //     );
+  //     if (userConfirmed) {
+  //       removeData(dataRef);
+  //     }
+  //   } else {
+  //     Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
+  //       {
+  //         text: '취소',
+  //         onPress: () => console.log('삭제 취소'),
+  //         style: 'cancel',
+  //       },
+  //       {
+  //         text: '확인',
+  //         onPress: () => {
+  //           removeData(dataRef);
+  //         },
+  //       },
+  //     ]);
+  //   }
+  // };
+
+  // // 글 삭제
+  // const handleDelete = () => {
+  //   const path = `${boardName}/${post.postId}`;
+  //   const postRef = ref(database, path);
+  //   removeProcess(postRef);
+  // };
+
+  // // 댓글 삭제
+  // const handleCommentDelete = (id) => {
+  //   const path = `${boardName}/${post.postId}/comments/${id}`;
+  //   const commentRef = ref(database, path);
+  //   removeProcess(commentRef);
+  //   fetchComments(); // 삭제 후 댓글을 다시 불러옴
+  // };
 
   return (
     <KeyboardAvoidingView

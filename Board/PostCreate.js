@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import axios from 'axios';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,6 +25,7 @@ const PostCreate = ({ route, navigation }) => {
   const [userName, setUserName] = useState();
 
   const userEmail = useSelector((state) => state.userEmail);
+  const serverPath = 'http://localhost:8080/';
 
   useEffect(() => {
     setUserName(userEmail?.split('@')[0]);
@@ -32,10 +34,12 @@ const PostCreate = ({ route, navigation }) => {
   // 작성한 글을 db에 반영
   const handleSubmit = () => {
     const postType = post ? 1 : 0; // 직성모드(0), 수정모드(1)
-    const serverPath = 'http://localhost:8080/';
+    const postId = post ? post.postId : userEmail + '_' + Date.now();
 
     // 새 글 데이터
     const newPost = {
+      postId: postId,
+      boardName: boardName,
       userEmail: userEmail,
       title: title,
       body: body,
@@ -47,14 +51,14 @@ const PostCreate = ({ route, navigation }) => {
       .then((response) => {
         console.log('Post data updated successfully.');
 
-        if (post && commentList) {
+        if (post && commentList) { // 수정 모드이고, 댓글 있으면 업데이트
           axios
             .post(serverPath + 'commentList', commentList)
             .then((response) => {
-              console.log('Comments data updated successfully.');
+              console.log('CommentList data updated successfully.');
             })
             .catch((error) => {
-              console.error('Comments data could not be saved.' + error);
+              console.error('CommentList data could not be saved.' + error);
             });
         }
         // 이전 화면으로 돌아간다.
@@ -70,7 +74,6 @@ const PostCreate = ({ route, navigation }) => {
       });
   };
 
-  // 글 수정 모드일 때 post가 존재하고, 기존 글 내용을 표시한다.
   return (
     <View style={styles.container}>
       <TextInput

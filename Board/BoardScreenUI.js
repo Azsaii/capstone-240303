@@ -73,38 +73,52 @@ const BoardScreenUI = ({ navigation, boardName }) => {
     );
   }, [search, posts]);
 
+  // 240306: 서버에서 postId, boardName, useEmail, title, body를 응답에 넣어 보내야함.
   // 글 가져오기
   useEffect(() => {
     setIsLoading(true);
-    const postsRef = ref(database, boardName);
-    console.log('postsRef: ' + postsRef);
-    const listener = onValue(
-      postsRef,
-      (snapshot) => {
-        console.log('test');
-        const data = snapshot.val();
-        console.log('data: ' + data);
-        if (data) {
-          const postList = Object.keys(data).map((key) => ({
-            id: key,
-            userEmail: data[key].userEmail,
-            title: data[key].title,
-            body: data[key].body,
-          }));
-          setPosts(postList);
-        }
+
+    axios.get(serverPath + 'posts')
+      .then((response) => {
+        const posts = response.data;
+        setPosts(posts);
         setIsLoading(false);
-      },
-      (error) => {
+      })
+      .catch((error) => {
         console.error('Error: ' + error);
         setIsLoading(false);
-      }
-    );
-
-    return () => {
-      off(postsRef, listener);
-    };
+      });
   }, []);
+
+  // 글 가져오기
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   const postsRef = ref(database, boardName);
+  //   const listener = onValue(
+  //     postsRef,
+  //     (snapshot) => {
+  //       const data = snapshot.val();
+  //       if (data) {
+  //         const postList = Object.keys(data).map((key) => ({
+  //           id: key,
+  //           userEmail: data[key].userEmail,
+  //           title: data[key].title,
+  //           body: data[key].body,
+  //         }));
+  //         setPosts(postList);
+  //       }
+  //       setIsLoading(false);
+  //     },
+  //     (error) => {
+  //       console.error('Error: ' + error);
+  //       setIsLoading(false);
+  //     }
+  //   );
+
+  //   return () => {
+  //     off(postsRef, listener);
+  //   };
+  // }, []);
 
   return (
     <SafeAreaView style={styles.container}>
