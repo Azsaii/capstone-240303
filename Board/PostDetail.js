@@ -144,7 +144,7 @@ const PostDetail = ({ route, navigation }) => {
   // 240306: 서버에서 아래처럼 response에 id, userEmail등 넣어서 보내줘야한다.
   // 댓글 가져오기
   const fetchComments = () => {
-    axios.get(serverPath + 'comments', { params: { boardName: boardName, postId: post.postId } })
+    axios.get(serverPath + 'comments', { params: { postId: post.postId } })
       .then((response) => {
         const comments = response.data;
         setCommentList(comments);
@@ -212,7 +212,7 @@ const PostDetail = ({ route, navigation }) => {
     };
 
     axios
-      .post(serverPath + 'comment', newComment)
+      .post(serverPath + 'comments', newComment)
       .then((response) => {
         console.log('Comments data updated successfully.');
         scrollViewRef.current.scrollToEnd({ animated: true }); // 화면 최하단으로 스크롤 이동
@@ -383,7 +383,7 @@ const handleCommentDelete = (id) => {
 
         {commentList.length > 0 &&
           commentList.map((item, index) => (
-            <Card key={item.id} style={styles.card}>
+            <Card key={item.commentId} style={styles.card}>
               <Card.Content>
                 <View style={styles.commentRow}>
                   <View>
@@ -395,7 +395,7 @@ const handleCommentDelete = (id) => {
                   {userEmail === item.userEmail ? (
                     <TouchableOpacity
                       style={[styles.commentDeleteButton]}
-                      onPress={() => handleCommentDelete(item.id)}
+                      onPress={() => handleCommentDelete(item.commentId)}
                     >
                       <Text style={styles.buttonText}>삭제</Text>
                     </TouchableOpacity>
