@@ -144,7 +144,8 @@ const PostDetail = ({ route, navigation }) => {
   // 240306: 서버에서 아래처럼 response에 id, userEmail등 넣어서 보내줘야한다.
   // 댓글 가져오기
   const fetchComments = () => {
-    axios.get(serverPath + 'comments', { params: { postId: post.postId } })
+    axios
+      .get(serverPath + 'comments', { params: { postId: post.postId } })
       .then((response) => {
         const comments = response.data;
         setCommentList(comments);
@@ -153,7 +154,7 @@ const PostDetail = ({ route, navigation }) => {
         console.error('Comments data could not be fetched.' + error);
       });
   };
-  
+
   useEffect(() => {
     // 댓글 가져오기
     fetchComments();
@@ -235,56 +236,57 @@ const PostDetail = ({ route, navigation }) => {
   };
 
   // 데이터 삭제 요청
-const removeData = (url) => {
-  axios.delete(serverPath + url)
-    .then(() => {
-      console.log('Data removed successfully.');
-      navigation.goBack();
-    })
-    .catch((error) => {
-      console.error('Data could not be removed.' + error);
-    });
-};
+  const removeData = (url) => {
+    axios
+      .delete(serverPath + url)
+      .then(() => {
+        console.log('Data removed successfully.');
+        navigation.goBack();
+      })
+      .catch((error) => {
+        console.error('Data could not be removed.' + error);
+      });
+  };
 
-// 삭제 확인 창
-const removeProcess = (url) => {
-  if (isWeb) {
-    const userConfirmed = window.confirm(
-      '삭제 확인',
-      '정말로 삭제하시겠습니까?'
-    );
-    if (userConfirmed) {
-      removeData(url);
-    }
-  } else {
-    Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
-      {
-        text: '취소',
-        onPress: () => console.log('삭제 취소'),
-        style: 'cancel',
-      },
-      {
-        text: '확인',
-        onPress: () => {
-          removeData(url);
+  // 삭제 확인 창
+  const removeProcess = (url) => {
+    if (isWeb) {
+      const userConfirmed = window.confirm(
+        '삭제 확인',
+        '정말로 삭제하시겠습니까?'
+      );
+      if (userConfirmed) {
+        removeData(url);
+      }
+    } else {
+      Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
+        {
+          text: '취소',
+          onPress: () => console.log('삭제 취소'),
+          style: 'cancel',
         },
-      },
-    ]);
-  }
-};
+        {
+          text: '확인',
+          onPress: () => {
+            removeData(url);
+          },
+        },
+      ]);
+    }
+  };
 
-// 글 삭제
-const handleDelete = () => {
-  const url = 'posts/' + post.postId;
-  removeProcess(url);
-};
+  // 글 삭제
+  const handleDelete = () => {
+    const url = 'posts/' + post.postId;
+    removeProcess(url);
+  };
 
-// 댓글 삭제
-const handleCommentDelete = (id) => {
-  const url = 'comments/' + id;
-  removeProcess(url);
-  fetchComments(); // 삭제 후 댓글을 다시 불러옴
-};
+  // 댓글 삭제
+  const handleCommentDelete = (id) => {
+    const url = 'comments/' + id;
+    removeProcess(url);
+    fetchComments(); // 삭제 후 댓글을 다시 불러옴
+  };
 
   // 데이터 삭제 요청
   // const removeData = (dataRef) => {

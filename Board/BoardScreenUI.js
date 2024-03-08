@@ -12,6 +12,7 @@ import { Button, TextInput, Card } from 'react-native-paper';
 import { ref, onValue, off } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Spinner from 'react-native-loading-spinner-overlay';
+import axios from 'axios';
 
 const styles = StyleSheet.create({
   padding: {
@@ -61,6 +62,7 @@ const BoardScreenUI = ({ navigation, boardName }) => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
+  const serverPath = 'http://localhost:8080/';
 
   LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
 
@@ -78,7 +80,8 @@ const BoardScreenUI = ({ navigation, boardName }) => {
   useEffect(() => {
     setIsLoading(true);
 
-    axios.get(serverPath + 'posts')
+    axios
+      .get(serverPath + 'posts')
       .then((response) => {
         const posts = response.data;
         setPosts(posts);

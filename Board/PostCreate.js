@@ -51,7 +51,8 @@ const PostCreate = ({ route, navigation }) => {
       .then((response) => {
         console.log('Post data updated successfully.');
 
-        if (post && commentList) { // 수정 모드이고, 댓글 있으면 업데이트
+        if (post && commentList) {
+          // 수정 모드이고, 댓글 있으면 업데이트
           axios
             .post(serverPath + 'commentList', commentList)
             .then((response) => {

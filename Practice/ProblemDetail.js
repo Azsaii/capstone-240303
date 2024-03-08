@@ -158,12 +158,19 @@ const ProblemDetail = ({ route, navigation }) => {
   // 북마크 가져오기
   useEffect(() => {
     if (!isLoggedIn) return;
-    const userRef = doc(firestore, 'users', userEmail, 'bookmarks', examDoc.id);
+    const bookmarkRef = doc(
+      firestore,
+      'users',
+      userEmail,
+      'bookmarks',
+      examDoc.id
+    );
 
-    const unsubscribe = onSnapshot(userRef, (snapshot) => {
+    const unsubscribe = onSnapshot(bookmarkRef, (snapshot) => {
       const data = snapshot.data();
       if (data && data.bookmarks) {
-        setBookmarks(data.bookmarks);
+        const updatedBookmarks = data.bookmarks.map((bookmark) => bookmark - 1);
+        setBookmarks(updatedBookmarks);
       } else {
         // 데이터가 없는 경우 상태 초기화
         setBookmarks([]);
@@ -181,12 +188,20 @@ const ProblemDetail = ({ route, navigation }) => {
     if (bookmarks.length === 0) {
       return;
     }
-    console.log('id = ' + examDoc.id);
-    const userRef = doc(firestore, 'users', userEmail, 'bookmarks', examDoc.id);
+
+    const bookmarkRef = doc(
+      firestore,
+      'users',
+      userEmail,
+      'bookmarks',
+      examDoc.id
+    );
+
+    const updatedBookmarks = bookmarks.map((bookmark) => bookmark + 1);
 
     try {
-      await setDoc(userRef, {
-        bookmarks: bookmarks,
+      await setDoc(bookmarkRef, {
+        bookmarks: updatedBookmarks,
       });
       console.log('Data updated successfully.');
     } catch (error) {
