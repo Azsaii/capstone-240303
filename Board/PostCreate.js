@@ -34,7 +34,7 @@ const PostCreate = ({ route, navigation }) => {
   // 작성한 글을 db에 반영
   const handleSubmit = () => {
     const postType = post ? 1 : 0; // 직성모드(0), 수정모드(1)
-    const postId = post ? post.postId : userEmail + '_' + Date.now();
+    const postId = post ? post.id : userEmail + '_' + Date.now();
 
     // 새 글 데이터
     const newPost = {
@@ -51,17 +51,6 @@ const PostCreate = ({ route, navigation }) => {
       .then((response) => {
         console.log('Post data updated successfully.');
 
-        if (post && commentList) {
-          // 수정 모드이고, 댓글 있으면 업데이트
-          axios
-            .post(serverPath + 'commentList', commentList)
-            .then((response) => {
-              console.log('CommentList data updated successfully.');
-            })
-            .catch((error) => {
-              console.error('CommentList data could not be saved.' + error);
-            });
-        }
         // 이전 화면으로 돌아간다.
         if (post) {
           navigation.navigate('PostDetail', {

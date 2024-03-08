@@ -1,14 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
-import {
-  Text,
-  View,
-  Alert,
-  Platform,
-  TouchableOpacity,
-  LogBox,
-} from 'react-native';
+import { Text, View, Alert, Platform, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import {
@@ -37,12 +30,19 @@ import DictionaryStack from '../Problem/Dictionary';
 import HistoryTalesScreen from '../HistoryVideo/HistoryTalesScreen';
 import LikedVideosScreen from '../HistoryVideo/LikedVideosScreen';
 
+const handleRefresh = () => {
+  window.location.reload(); // 화면 새로고침
+};
+
 const Drawer = createDrawerNavigator();
 const CustomBackButton = ({ navigation }) => {
   const route = useRoute();
   const handlePress = () => {
     if (route.name === '회원가입') {
       navigation.navigate('로그인');
+    } else if (route.name === '역사이야기') {
+      navigation.navigate('HomeScreen');
+      handleRefresh();
     } else {
       navigation.goBack();
     }
@@ -74,8 +74,6 @@ export default function Sidebar({ navigation }) {
   const userAgent = navigator.userAgent || navigator.vendor;
   const isWeb = useSelector((state) => state.isWeb);
 
-  LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
-
   useEffect(() => {
     dispatch(
       // 앱/웹 구분
@@ -94,6 +92,7 @@ export default function Sidebar({ navigation }) {
     dispatch(setLoggedIn(false));
     if (isWeb) {
       localStorage.removeItem('email');
+      console.log('머징');
     }
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
@@ -130,7 +129,7 @@ export default function Sidebar({ navigation }) {
 
   return (
     <Drawer.Navigator
-      drawerType="front"
+      drawerType={isWeb ? 'permanent' : 'front'}
       screenOptions={({ navigation }) => ({
         headerTitleAlign: 'center',
         drawerPosition: 'right',

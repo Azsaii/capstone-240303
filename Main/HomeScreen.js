@@ -7,10 +7,12 @@ import {
   Image,
   StyleSheet,
   Linking,
-  LogBox,
 } from 'react-native'; // StyleSheet import 추가
 import { useSelector, useDispatch } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native';
+import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
+import { ScrollRestoration } from 'react-router-dom';
 
 const Achievement = 52;
 const currentDate = new Date();
@@ -18,7 +20,33 @@ const testDate = new Date('2024-05-25');
 const imageurl =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EB%B0%B0%EA%B2%BD.webp?alt=media&token=cabac6ad-77a8-4c88-9366-a33cd01c5bf6';
 const imageurl2 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%84%B8%EC%A2%85%EB%B0%B0%EA%B2%BD.jpg?alt=media&token=80828e6b-7c18-4719-9805-1baa1f412f1e';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%EB%B0%B0%EA%B2%BD.jpg?alt=media&token=ecd1f36d-ecc3-4a81-a159-1e2f002a8a87';
+const imageurl3 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%ED%95%9C%EC%84%B1%EB%8C%80%ED%95%99%EA%B5%90.jpg?alt=media&token=dc8b154b-e4ac-49fe-9031-317465a962d7';
+const imageurl4 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%ED%99%88%EB%9D%BC%EB%B2%A8.jpg?alt=media&token=63425a12-b57b-4035-aa33-f5b11a2f5067';
+const imageurl5 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%8B%9C%ED%97%98%EC%9D%BC%EC%A0%95.png?alt=media&token=9b215c0e-97bf-4a40-b822-b8adec900752';
+//5번 시험일정
+const imageurl6 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%8B%9C%ED%97%98%EC%9E%A5%EC%9C%84%EC%B9%98.png?alt=media&token=6442cd8e-b2cf-4d1e-961e-1ac1a95a953b';
+const imageurl7 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%9B%90%EC%84%9C%EC%A0%91%EC%88%98.jpg?alt=media&token=36b1ecbd-9f2d-4fae-b0df-0f6c3ef591a6';
+const imageurl8 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EA%B5%AD%EC%82%AC%ED%8E%B8%EC%B0%AC%EC%9C%84%EC%9B%90%ED%9A%8C.jpg?alt=media&token=2389d417-430d-4466-baae-345b0c19f807';
+const imageurl9 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%ED%95%9C%EA%B5%AD%EC%82%AC%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4.jpg?alt=media&token=168b5172-1e7b-4e6f-8b4c-57b5a10f4b65';
+const imageicon1 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EA%B8%B0%EC%B6%9C.png?alt=media&token=3990264c-86b8-4c20-869f-a40dc6a7f058';
+const imageicon2 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%8B%9C%EB%8C%80%EB%B3%84.png?alt=media&token=466b4623-72e5-4439-b489-aa8005926477';
+const imageicon3 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%9C%A0%ED%98%95%EB%B3%84.png?alt=media&token=07c2c45b-d0cf-482b-8178-d16a58ac8a8c';
+const imageicon4 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%98%A4%EB%8B%B5%EB%85%B8%ED%8A%B8.png?alt=media&token=a2a59d36-19c9-4016-87e5-d86fef39cf93';
+const imageicon5 =
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%97%AD%EC%82%AC%EC%9D%B4%EC%95%BC%EA%B8%B0.png?alt=media&token=a5de5b71-eee9-4202-8b07-66b274cb65cc';
+
 const timeDifference = testDate - currentDate;
 const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 
@@ -29,12 +57,44 @@ const LinkButtonPressed = () => {
     console.error('링크를 여는 중 오류 발생:', err)
   );
 };
+const Link1 = () => {
+  const examScheduleLink =
+    'https://www.historyexam.go.kr/pst/list.do?bbs=noti&netfunnel_key=4F315CE4A29D6F3D49839EB5A3B9191FEF8546B25998EC2052C61D241427C4958E6DAB7217606E99262E063BD05AB8EC4C171BB07FC8A9F5810EFA3989156F09C219884E7E69AE8FCA7EF380A6F8D3B91CF6BADBB12E604C00464C9F2FE9B694D33D11D672413A9D3AD634B434176C80312C302C30';
+  Linking.openURL(examScheduleLink).catch((err) =>
+    console.error('링크를 여는 중 오류 발생:', err)
+  );
+};
+const Link2 = () => {
+  const examScheduleLink =
+    'https://www.historyexam.go.kr/pageLink.do?link=examArea&netfunnel_key=27C91A4C564EFF0A164E9F5918532E493CFC14C442784B17E2AF5E4D3ABDC10F470E0011C8D26FFF07E72FDA269343FD4CB6B0FEFE8B68023EF4207F3FCC565D2822BAFEB69BBD22D19BB2DEA4ABC17B5040FF6CCA34DB8A028CF47044B6F18A234B1EEDF2C1E725FD8CB4420BEBC394352C312C302C30';
+  Linking.openURL(examScheduleLink).catch((err) =>
+    console.error('링크를 여는 중 오류 발생:', err)
+  );
+};
+const Link3 = () => {
+  const examScheduleLink = 'https://www.history.go.kr/';
+  Linking.openURL(examScheduleLink).catch((err) =>
+    console.error('링크를 여는 중 오류 발생:', err)
+  );
+};
+const Link4 = () => {
+  const examScheduleLink = 'https://db.history.go.kr/';
+  Linking.openURL(examScheduleLink).catch((err) =>
+    console.error('링크를 여는 중 오류 발생:', err)
+  );
+};
+const Link5 = () => {
+  const examScheduleLink = 'https://www.historyexam.go.kr/user/userLgin.do';
+  Linking.openURL(examScheduleLink).catch((err) =>
+    console.error('링크를 여는 중 오류 발생:', err)
+  );
+};
 
 const HomeScreen = ({ navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
-  LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
+  const dispatch = useDispatch();
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,63 +113,143 @@ const HomeScreen = ({ navigation }) => {
     window.location.reload(); // 화면 새로고침
   };
 
+  const handleLogout = () => {
+    dispatch(setUserEmail(null));
+    dispatch(setLoggedIn(false));
+    if (isWeb) {
+      localStorage.removeItem('email');
+    }
+    handleRefresh();
+  };
+
   return (
     <>
       {isWeb && (
         <>
           <View style={styles.webTotalContainer}>
-            <View style={styles.websidebar}></View>
-
-            <View style={styles.webContainer}>
-              <View style={styles.webHeader}>
-                <Text style={styles.webTitle}>한국사 능력 검정 시험</Text>
-              </View>
-              <View style={styles.webheaderRight}>
-                {isLoggedIn && (
-                  <Text style={styles.webuserText}>
-                    {userEmail}님 환영합니다
-                  </Text>
-                )}
-                {!isLoggedIn && (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate('로그인')}
-                      style={styles.webloginButton}
-                    >
-                      <Text style={styles.webloginButtonText}>로그인</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate('회원가입')}
-                      style={styles.webloginButton}
-                    >
-                      <Text style={styles.webloginButtonText}>회원가입</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-              <View style={styles.webbodyContainer}>
-                <View style={styles.webbodyContent}>
-                  {/* 이미지 */}
-                  <Image
-                    source={{ uri: imageurl2 }} // 이미지 URL
-                    style={styles.webimageStyle} // 이미지 스타일 적용
-                  />
-                </View>
-              </View>
+            <View style={styles.webImagecontainer2}>
+              <Image style={styles.webimage} source={{ uri: imageurl4 }} />
             </View>
-            <View style={styles.websidebar}>
-              {/* 오른쪽에 클릭하면 이동 가능한 텍스트들 */}
-              <TouchableOpacity
+            <View style={styles.webinnerView}>
+              {isLoggedIn && (
+                <>
+                  <Text style={styles.webloginText}>
+                    {userEmail}님 환영합니다.
+                  </Text>
+                  <TouchableHighlight
+                    underlayColor="transparent"
+                    onPress={handleLogout}
+                  >
+                    <Text style={styles.websignupText}>로그아웃</Text>
+                  </TouchableHighlight>
+                </>
+              )}
+              {!isLoggedIn && (
+                <>
+                  <TouchableHighlight
+                    underlayColor="transparent"
+                    onPress={() => navigation.navigate('로그인')}
+                  >
+                    <Text style={styles.webloginText}>로그인</Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight
+                    underlayColor="transparent"
+                    onPress={() => navigation.navigate('회원가입')}
+                  >
+                    <Text style={styles.websignupText}>회원가입</Text>
+                  </TouchableHighlight>
+                </>
+              )}
+            </View>
+            <View style={styles.webImagecontainer}>
+              <Image style={styles.webimage} source={{ uri: imageurl2 }} />
+            </View>
+            <View style={styles.webIconcontainer}>
+              <TouchableWithoutFeedback
+                onPress={() => navigation.navigate('기출문제')}
+              >
+                <View style={styles.webimageIconcontainer}>
+                  <Image
+                    source={{ uri: imageicon1 }}
+                    style={styles.webimage2}
+                  />
+                  <Text>기출문제 풀이</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
                 onPress={() => navigation.navigate('시대별 풀이')}
               >
-                <Text>페이지 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Page2')}>
-                <Text>페이지 2</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Page3')}>
-                <Text>페이지 3</Text>
-              </TouchableOpacity>
+                <View style={styles.webimageIconcontainer}>
+                  <Image
+                    source={{ uri: imageicon2 }}
+                    style={styles.webimage2}
+                  />
+                  <Text>시대별 풀이</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => navigation.navigate('유형별 풀이')}
+              >
+                <View style={styles.webimageIconcontainer}>
+                  <Image
+                    source={{ uri: imageicon3 }}
+                    style={styles.webimage2}
+                  />
+                  <Text>유형별 풀이</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => navigation.navigate('오답노트')}
+              >
+                <View style={styles.webimageIconcontainer}>
+                  <Image
+                    source={{ uri: imageicon4 }}
+                    style={styles.webimage2}
+                  />
+                  <Text>오답노트</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => navigation.navigate('역사이야기')}
+              >
+                <View style={styles.webimageIconcontainer}>
+                  <Image
+                    source={{ uri: imageicon5 }}
+                    style={styles.webimage2}
+                  />
+                  <Text>역사 이야기</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+
+            <View style={styles.webIconcontainer2}>
+              <TouchableWithoutFeedback onPress={Link1}>
+                <View style={styles.webImage3Container}>
+                  <Image source={{ uri: imageurl5 }} style={styles.webimage2} />
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={Link2}>
+                <View style={styles.webImage4Container}>
+                  <Image source={{ uri: imageurl6 }} style={styles.webimage2} />
+                </View>
+              </TouchableWithoutFeedback>
+
+              <View style={styles.webImage6Container}>
+                <TouchableWithoutFeedback onPress={Link3}>
+                  <Image source={{ uri: imageurl8 }} style={styles.webimage3} />
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={Link4}>
+                  <Image source={{ uri: imageurl9 }} style={styles.webimage3} />
+                </TouchableWithoutFeedback>
+              </View>
+              <TouchableWithoutFeedback onPress={Link5}>
+                <View style={styles.webImage5Container}>
+                  <Image source={{ uri: imageurl7 }} style={styles.webimage2} />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+            <View style={styles.webBottomContainer}>
+              <View style={styles.webBottomView}></View>
             </View>
           </View>
         </>
@@ -208,7 +348,7 @@ const styles = StyleSheet.create({
   },
   imagecontainer: {
     width: '100%',
-    height: '35%',
+    height: '30%',
     position: 'absolute',
     flex: 1,
   },
@@ -338,63 +478,104 @@ const styles = StyleSheet.create({
 
   //웹 전용 스타일
   webTotalContainer: {
-    flex: 1,
-    flexDirection: 'row', // 세로 배치
-    // 웹 전체 컨테이너에 대한 스타일 추가
+    backgroundColor: 'white', // 배경색을 흰색으로 설정
   },
-  webContainer: {
-    width: 1000,
-    flexDirection: 'column',
-  },
-  webHeader: {
-    alignItems: 'center', // 가운데 정렬
-    // 여기에 필요한 스타일 추가
-  },
-  webheaderRight: {
-    flexDirection: 'row', // 가로 배치
+  webinnerView: {
+    flexDirection: 'row', // 가로로 배치
     justifyContent: 'flex-end', // 오른쪽 정렬
-    // 여기에 필요한 스타일 추가
+    marginBottom: 10,
+    marginTop: 10,
+    backgroundColor: 'white', // 배경색을 흰색으로 설정
+    // 원하는 스타일을 지정하세요
   },
-  webTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
+  webloginText: {
+    fontSize: 17, // 로그인 텍스트의 폰트 크기
+    color: 'gray', // 로그인 텍스트의 글자 색
+    marginRight: 10, // 오른쪽 간격
+    // 로그인 텍스트의 스타일을 지정하세요
   },
-  webuserText: {
-    fontSize: 14,
+  websignupText: {
+    fontSize: 17, // 회원가입 텍스트의 폰트 크기
+    color: 'gray', // 회원가입 텍스트의 글자 색
+    marginLeft: 10, // 왼쪽 간격
+    marginRight: 100,
+    // 회원가입 텍스트의 스타일을 지정하세요
   },
-  webbodyContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    borderWidth: 1, // 테두리 두께
-    borderColor: 'black', // 테두리 색상
+  webImagecontainer: {
+    width: '100%', // 부모 요소의 100% 너비를 가짐
+    height: 280, // 고정된 세로 크기
   },
-  websidebar: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'lightgray',
-    padding: 10,
-    flex: 1,
+  webImagecontainer2: {
+    position: 'absolute',
+    top: 2, // 부모 요소의 상단에 배치
+    left: 100, // 부모 요소의 왼쪽에 배치
+    width: 185,
+    height: 40,
+    zIndex: 9999, // 다른 요소들 위로 오게 함
   },
-  webbodyContent: {
-    flex: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+  webimage: {
+    width: '100%',
+    height: '100%', // 부모 요소인 웹 이미지 컨테이너와 동일한 크기를 가짐
   },
-  webloginButton: {
-    backgroundColor: '#21825B', // 배경색
-    padding: 10, // 내부 여백
-    borderRadius: 5, // 테두리 둥글기
-    alignItems: 'center', // 수평 정렬
-    justifyContent: 'center', // 수직 정렬
-    margin: 5,
+  webimage2: {
+    width: '100%',
+    height: '100%', // 부모 요소인 웹 이미지 컨테이너와 동일한 크기를 가짐
   },
-  webloginButtonText: {
-    fontSize: 16, // 텍스트 크기
-    color: '#fff',
+  webimage3: {
+    width: '100%',
+    height: '100%',
+    marginBottom: 10,
   },
-  webimageStyle: {
-    width: 200,
-    height: 200,
+  webIconcontainer: {
+    flexDirection: 'row', // 요소를 가로로 정렬
+    backgroundColor: 'white',
+    width: '70%',
+    height: 150,
+    alignItems: 'center', // 수평 가운데 정렬
+    justifyContent: 'center', // 수직 가운데 정렬
+    marginLeft: '15%',
+  },
+  webIconcontainer2: {
+    flexDirection: 'row', // 요소를 가로로 정렬
+    backgroundColor: 'white',
+    width: '80%',
+    height: 150,
+    justifyContent: 'center', // 수직 가운데 정렬
+    marginLeft: '10%',
+    marginTop: 20,
+  },
+  webimageIconcontainer: {
+    width: 100,
+    height: 100,
+    alignItems: 'center', // 수평 가운데 정렬
+    justifyContent: 'center', // 수직 가운데 정렬
+    marginHorizontal: 20, // 요소들 사이의 가로 간격을 조절
+  },
+  webImage3Container: {
+    width: '20%',
+    height: '100%',
+  },
+  webImage4Container: {
+    width: '15%',
+    height: '100%',
+  },
+  webImage5Container: {
+    width: '7.5%',
+    height: '82%',
+    marginLeft: 50,
+  },
+  webImage6Container: {
+    width: '15%',
+    height: '33%',
+    marginLeft: 50,
+  },
+  webBottomContainer: {
+    borderTopWidth: 1,
+    borderTopColor: 'black',
+  },
+  webBottomView: {
+    width: '100%',
+    /* 필요한 다른 스타일 속성들 */
   },
 });
 

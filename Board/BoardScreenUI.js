@@ -75,16 +75,24 @@ const BoardScreenUI = ({ navigation, boardName }) => {
     );
   }, [search, posts]);
 
-  // 240306: 서버에서 postId, boardName, useEmail, title, body를 응답에 넣어 보내야함.
   // 글 가져오기
   useEffect(() => {
     setIsLoading(true);
-
     axios
-      .get(serverPath + 'posts')
+      .get(serverPath + 'posts', { params: { boardName: boardName } })
       .then((response) => {
         const posts = response.data;
-        setPosts(posts);
+
+        if (posts) {
+          const postList = Object.keys(posts).map((key) => ({
+            id: key,
+            postId: posts[key].postId,
+            userEmail: posts[key].userEmail,
+            title: posts[key].title,
+            body: posts[key].body,
+          }));
+          setPosts(postList);
+        }
         setIsLoading(false);
       })
       .catch((error) => {

@@ -33,7 +33,7 @@ const Login = ({ navigation, onLogin }) => {
       const email = userCredential.user.email; // 로그인 성공 시 이메일 얻기
       dispatch(setUserEmail(email)); // 이메일 상태 업데이트
       dispatch(setLoggedIn(true)); // 로그인 상태 업데이트
-      if (isWeb==true) {
+      if (isWeb == true) {
         localStorage.setItem('email', email);
       }
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     maxWidth: 500, // 웹 버전에서 최대 너비 설정
-    width:'100%',
+    width: '100%',
     margin: 'auto', // 화면 중앙 정렬
   },
 });

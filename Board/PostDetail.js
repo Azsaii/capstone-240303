@@ -141,14 +141,20 @@ const PostDetail = ({ route, navigation }) => {
     }
   }, [userEmail]);
 
-  // 240306: 서버에서 아래처럼 response에 id, userEmail등 넣어서 보내줘야한다.
   // 댓글 가져오기
   const fetchComments = () => {
     axios
-      .get(serverPath + 'comments', { params: { postId: post.postId } })
+      .get(serverPath + 'comments', { params: { postId: post.id } })
       .then((response) => {
-        const comments = response.data;
-        setCommentList(comments);
+        const data = response.data;
+        if (data) {
+          const comments = Object.keys(data).map((key) => ({
+            commentId: data[key].commentId,
+            userEmail: data[key].userEmail,
+            comment: data[key].comment,
+          }));
+          setCommentList(comments);
+        }
       })
       .catch((error) => {
         console.error('Comments data could not be fetched.' + error);
@@ -162,7 +168,7 @@ const PostDetail = ({ route, navigation }) => {
 
   // 댓글 가져오기
   // const fetchComments1 = () => {
-  //   const commentsRef = ref(database, boardName + '/' + post.postId + '/comments');
+  //   const commentsRef = ref(database, boardName + '/' + post.id + '/comments');
   //   const listener = onValue(commentsRef, (snapshot) => {
   //     const data = snapshot.val();
   //     if (data) {
@@ -170,7 +176,7 @@ const PostDetail = ({ route, navigation }) => {
   //         id: key,
   //         userEmail: data[key].userEmail,
   //         comment: data[key].comment,
-  //         postId: post.postId,
+  //         postId: post.id,
   //       }));
   //       setCommentList(comments);
   //     } else setCommentList([]); // 댓글이 없는 경우 빈칸으로 세팅
@@ -199,9 +205,9 @@ const PostDetail = ({ route, navigation }) => {
     }
     const commentId = userName + '_' + Date.now();
 
-    // post와 post.postId가 존재하는지 확인
-    if (!post || !post.postId) {
-      console.error('Post or post.postId is undefined.');
+    // post와 post.id가 존재하는지 확인
+    if (!post || !post.id) {
+      console.error('Post or post.id is undefined.');
       return;
     }
 
@@ -209,13 +215,14 @@ const PostDetail = ({ route, navigation }) => {
       commentId: commentId,
       userEmail: userEmail,
       comment: comment,
-      postId: post.postId,
+      postId: post.id,
     };
 
     axios
       .post(serverPath + 'comments', newComment)
       .then((response) => {
         console.log('Comments data updated successfully.');
+        fetchComments(); // 댓글 새로고침
         scrollViewRef.current.scrollToEnd({ animated: true }); // 화면 최하단으로 스크롤 이동
       })
       .catch((error) => {
@@ -241,7 +248,6 @@ const PostDetail = ({ route, navigation }) => {
       .delete(serverPath + url)
       .then(() => {
         console.log('Data removed successfully.');
-        navigation.goBack();
       })
       .catch((error) => {
         console.error('Data could not be removed.' + error);
@@ -277,13 +283,14 @@ const PostDetail = ({ route, navigation }) => {
 
   // 글 삭제
   const handleDelete = () => {
+    console.log('id = ' + post.postId);
     const url = 'posts/' + post.postId;
     removeProcess(url);
   };
 
   // 댓글 삭제
-  const handleCommentDelete = (id) => {
-    const url = 'comments/' + id;
+  const handleCommentDelete = (commentId) => {
+    const url = 'comments/' + commentId;
     removeProcess(url);
     fetchComments(); // 삭제 후 댓글을 다시 불러옴
   };
@@ -328,14 +335,14 @@ const PostDetail = ({ route, navigation }) => {
 
   // // 글 삭제
   // const handleDelete = () => {
-  //   const path = `${boardName}/${post.postId}`;
+  //   const path = `${boardName}/${post.id}`;
   //   const postRef = ref(database, path);
   //   removeProcess(postRef);
   // };
 
   // // 댓글 삭제
   // const handleCommentDelete = (id) => {
-  //   const path = `${boardName}/${post.postId}/comments/${id}`;
+  //   const path = `${boardName}/${post.id}/comments/${id}`;
   //   const commentRef = ref(database, path);
   //   removeProcess(commentRef);
   //   fetchComments(); // 삭제 후 댓글을 다시 불러옴
@@ -385,7 +392,7 @@ const PostDetail = ({ route, navigation }) => {
 
         {commentList.length > 0 &&
           commentList.map((item, index) => (
-            <Card key={item.commentId} style={styles.card}>
+            <Card key={index} style={styles.card}>
               <Card.Content>
                 <View style={styles.commentRow}>
                   <View>
