@@ -25,7 +25,7 @@ const PostCreate = ({ route, navigation }) => {
   const [userName, setUserName] = useState();
 
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://localhost:8080/';
+  const serverPath = 'http://192.168.0.3:8080/';
 
   useEffect(() => {
     setUserName(userEmail?.split('@')[0]);

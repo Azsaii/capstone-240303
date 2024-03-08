@@ -9,8 +9,6 @@ import {
   LogBox,
 } from 'react-native';
 import { Button, TextInput, Card } from 'react-native-paper';
-import { ref, onValue, off } from 'firebase/database';
-import { database } from '../firebaseConfig';
 import Spinner from 'react-native-loading-spinner-overlay';
 import axios from 'axios';
 
@@ -62,7 +60,7 @@ const BoardScreenUI = ({ navigation, boardName }) => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://localhost:8080/';
+  const serverPath = 'http://192.168.0.3:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
 
   LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
 
