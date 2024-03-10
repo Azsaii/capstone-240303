@@ -335,12 +335,11 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                     <Divider />
                     
                     {
-                        comments.map((comment, index) => {
+                        comments.map((comment) => {
                             return (
-                                <>
+                                <React.Fragment key={comment.docId}>
                                     <View style={{ display: 'flex', width: '100%', flexDirection: 'row' }}>
                                         <List.Item
-                                        key={index}
                                         title={comment.comment}
                                         description={comment.userEmail}
                                         left={(props) => <List.Icon {...props} icon="comment" />}
@@ -356,7 +355,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                                     </View>
 
                                     <Divider/>
-                                </>
+                                </React.Fragment>
                             );
                         })
                         
