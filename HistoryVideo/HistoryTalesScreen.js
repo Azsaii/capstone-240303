@@ -355,7 +355,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                                         )}
                                     </View>
 
-                                    <Divider key={index} />
+                                    <Divider/>
                                 </>
                             );
                         })
