@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Text, View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {Modal, Text, View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Pressable } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
-import { Picker } from '@react-native-picker/picker';
-import { MultipleSelectList } from 'react-native-dropdown-select-list';
+import { SelectList, MultipleSelectList } from 'react-native-dropdown-select-list';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
-import { doc, getDoc, collection, addDoc, getDocs } from 'firebase/firestore';
-import { Button } from 'react-native-paper';
+import { doc, getDoc, collection, deleteDoc, addDoc, getDocs, updateDoc } from 'firebase/firestore';
+import { Button, Card, TextInput, List, IconButton, MD3Colors, Divider, Icon } from 'react-native-paper';
 
 const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     const [videos, setVideos] = useState([]);
@@ -15,8 +14,22 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     const [selectedTypeKeywords, setSelectedTypeKeywords] = useState([]);
     const [isLoading, setIsLoading] = useState(false); // 로딩 상태를 관리할 새로운 상태 변수
 
+    const [comments, setComments] = useState([]);
+    const [comment, setComment] = useState();
+
+    
+    const [selectedVideo, setselectedVideo] = useState();
+
+
+    const [selected, setSelected] = React.useState("");
 
     const flatListRef = useRef();
+
+    const data = [
+        '고조선', '삼국', '남북국 시대', '후삼국', '고려', '조선', '개항기', '일제강점기', '해방 이후'
+    ];
+    
+    const [modalVisible, setModalVisible] = useState(false);
 
     const addFavorite = async (video) => {
 
@@ -61,6 +74,72 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
 
     };
 
+
+    const addLike = async (video) => {
+
+        if (!isLoggedIn) {
+            Alert.alert(
+                '경고!',
+                '해당 영상을 좋아요 하실려면 로그인을 해주세요',
+                [
+                    {
+                        text: '예',
+
+                        onPress: () => navigation.navigate('로그인'),
+                    }
+                ]
+            );
+            return;
+
+        }
+
+        try {
+            const snapshot = await getDocs(collection(firestore, 'Videos'));
+
+            snapshot.forEach((document) => {
+                
+
+                const data = document.data();
+
+                if (data.videoId === video.videoId) {
+                
+                    const currentLikes = data.like;
+
+                    if(currentLikes.includes(userEmail)) {
+
+                        Alert.alert(
+                            '경고!',
+                            '이미 해당 영상을 성공적으로 좋아요 했습니다!'
+                        );
+
+
+                        return;
+
+                    }
+
+                    const updatedLikes = [...currentLikes, userEmail];
+
+
+                    updateDoc(doc(firestore, 'Videos', document.id), {
+                        like: updatedLikes
+                    }).then(() => {
+                        Alert.alert(
+                            '성공!',
+                            '해당 영상을 성공적으로 좋아요 했습니다!'
+                        );
+
+                        fetchVideos();
+                    }).catch((e) => {
+                        console.error("Error updating document: ", e);
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Error like document: ", e);
+        }
+
+    };
+
     const fetchVideos = async () => {
 
         setIsLoading(true); //로딩 시작
@@ -94,6 +173,75 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     }
 
 
+
+    const fetchComments = async (video) => {
+        const snapshot = await getDocs(collection(firestore, 'Videos'));
+    
+        let commentsArray = [];
+    
+        for (const document of snapshot.docs) {
+            const data = document.data();
+    
+            if (data.videoId === video.videoId) {
+                const commentsSnapshot = await getDocs(collection(firestore, `Videos/${document.id}/comments`));
+                commentsSnapshot.forEach(doc => {
+                    commentsArray.push({
+                        docId: doc.id,
+                        comment: doc.data().comment,
+                        userEmail: doc.data().userEmail
+                    });
+                });
+            }
+        }
+    
+        return commentsArray;
+    }
+
+
+    const submitComments = async () => {
+        const snapshot = await getDocs(collection(firestore, 'Videos'));
+    
+        for (const document of snapshot.docs) {
+            const data = document.data();
+            if (data.videoId === selectedVideo.videoId) {
+                try {
+                    await addDoc(collection(firestore, `Videos/${document.id}/comments`), {
+                        comment: comment,
+                        userEmail: userEmail
+                    });
+                    const comments = await fetchComments(selectedVideo);
+                    setComments(comments);
+                    setComment("");
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                }
+            }
+        }
+    }
+
+
+    const deleteComment = async (commentDocId) => {
+        const snapshot = await getDocs(collection(firestore, 'Videos'));
+
+        for (const document of snapshot.docs) {
+            const data = document.data();
+            if (data.videoId === selectedVideo.videoId) {
+                try {
+                    await deleteDoc(doc(firestore, `Videos/${document.id}/comments`, commentDocId));
+                    const comments = await fetchComments(selectedVideo);
+                    setComments(comments);
+                    setComment(""); // 필요에 따라 주석 처리를 해제하세요.
+                } catch (e) {
+                    console.error("Error delete document: ", e);
+                }
+            }
+        }
+        
+    };
+    
+    
+    
+
     useEffect(() => {
         fetchVideos();
     }, [selectedKeyword, selectedTypeKeywords]);
@@ -101,29 +249,24 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     return (
         <View style={styles.container}>
             <View>
-                <Text style={{ fontWeight: 'bold', fontSize: 20 }}><AntDesign name="clockcircleo" size={25} color="black" /> 시대 별</Text>
-                <Picker
-                    selectedValue={selectedKeyword}
-                    mode='dropdown'
-                    onValueChange={(itemValue) => {
-                        setSelectedKeyword(itemValue);
-                    }}
+                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><AntDesign name="clockcircleo" size={25} color="black" /> 시대 별</Text>
+                <SelectList 
+                    setSelected={(val) => setSelectedKeyword(val)} 
+                    data={[
+                        { key: '1', value: '고조선' },
+                        { key: '2', value: '삼국' },
+                        { key: '3', value: '남북국 시대' },
+                        { key: '4', value: '후삼국' },
+                        { key: '5', value: '고려' },
+                        { key: '6', value: '조선' },
+                        { key: '7', value: '개항기' },
+                        { key: '8', value: '일제강점기' },
+                        { key: '9', value: '해방 이후' }
+                    ]}
+                    save="value"
+                />
 
-                    style={{ marginBottom: 10 }}
-
-                >
-                    <Picker.Item label="고조선" value="고조선" />
-                    <Picker.Item label="삼국" value="삼국" />
-                    <Picker.Item label="남북국 시대" value="남북국" />
-                    <Picker.Item label="후삼국" value="후삼국" />
-                    <Picker.Item label="고려" value="고려" />
-                    <Picker.Item label="조선" value="조선" />
-                    <Picker.Item label="개항기" value="개항기" />
-                    <Picker.Item label="일제강점기" value="일제강점기" />
-                    <Picker.Item label="해방 이후" value="해방 이후" />
-                </Picker>
-
-                <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10 }}><Feather name="list" size={25} color="black" /> 유형 별</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><Feather name="list" size={25} color="black" /> 유형 별</Text>
 
                 <MultipleSelectList
                     data={[
@@ -150,20 +293,93 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                     data={videos}
                     keyExtractor={(item, index) => index.toString()}
                     ListFooterComponent={isLoading ? <ActivityIndicator /> : null}
-                    contentContainerStyle={{ padding: 10 }}
+                    contentContainerStyle={{ padding: 5 }}
                     renderItem={({ item }) => (
-                        <View style={{marginBottom: 30}}>
+                        <Card style={{marginBottom: 30, padding: 4, backgroundColor: 'white'}}>
                             <YoutubePlayer
                                 height={200}
                                 videoId={item.videoId}
                             />
-                            <TouchableOpacity onPress={() => addFavorite(item)}>
-                                <Button icon="star" mode="elevated" buttonColor='yellow' textColor='black'>즐겨찾기</Button>
-                            </TouchableOpacity>
-                        </View>
+                            
+                            <View style={{marginBottom: 10, marginTop: 10, display: 'flex', flexDirection: 'row' , justifyContent: 'space-around'}}>
+                                <Button icon="thumb-up" buttonColor='white' textColor='black' mode="elevated" onPress={() => addLike(item)}>{`좋아요 ${item.like.length}`}</Button>
+                                <Button icon="comment" buttonColor='white' textColor='black' mode="elevated" title='Comments Button' onPress={ async () => {
+                                   
+                                    const comments = await fetchComments(item);
+                                    setComments(comments); 
+                                    setselectedVideo(item)
+                                    setModalVisible(true);
+                                }}>댓글</Button>
+                                <Button icon="bookmark" buttonColor='white' textColor='black' mode="elevated" title='Save Button' onPress={() => addFavorite(item)}>저장하기</Button>
+                            </View>
+                        </Card>
+
+                        
                         )
                     }
                 />
+
+
+                <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    Alert.alert('Modal has been closed.');
+                    setModalVisible(!modalVisible);
+                }}
+                >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 35, marginTop: 10, marginBottom: 10, padding: 10 }}><Icon source="message-reply-text" size={35}/> 댓글</Text>
+                    <Divider />
+                    
+                    {
+                        comments.map((comment, index) => {
+                            return (
+                                <>
+                                    <View style={{ display: 'flex', width: '100%', flexDirection: 'row' }}>
+                                        <List.Item
+                                        key={index}
+                                        title={comment.comment}
+                                        description={comment.userEmail}
+                                        left={(props) => <List.Icon {...props} icon="comment" />}
+                                        />
+                                        {comment.userEmail === userEmail && (
+                                        <IconButton
+                                            icon="trash-can"
+                                            iconColor={MD3Colors.error50}
+                                            size={20}
+                                            onPress={() => deleteComment(comment.docId)}
+                                        />
+                                        )}
+                                    </View>
+
+                                    <Divider key={index} />
+                                </>
+                            );
+                        })
+                        
+                    }
+
+                            
+                    <TextInput
+                        style={{width: '100%', marginTop: 20, marginBottom: 20, backgroundColor: 'white'}}
+                        right={<TextInput.Icon icon="send-circle" onPress={submitComments} />}
+                        placeholder={
+                            isLoggedIn ? '댓글을 작성해주세요!' : '로그인하고 댓글을 작성해주세요!'
+                        }
+
+                        onChangeText={(text) => setComment(text)} // 입력값을 상태로 관리
+                        value={comment}
+                        editable={isLoggedIn}
+                    />
+
+                    <Button icon="close" buttonColor='white' textColor='black' mode="elevated" title='Comments Button' onPress={() => setModalVisible(!modalVisible)}>닫기</Button>
+            
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -182,7 +398,44 @@ const styles = StyleSheet.create({
         padding: 15,
         flex: 1,
         flexDirection: 'column'
-    }
+    },
+
+
+    Card: {
+        backgroundColor: '#ffffff'
+    },
+
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22,
+      },
+      modalView: {
+        margin: 20,
+        width: '90%%',
+
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 5,
+        paddingTop: 15,
+        paddingBottom: 15,
+
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+      },
+     
+      modalText: {
+        marginBottom: 15,
+        textAlign: 'center',
+      },
 });
+
 
 export default HistoryTalesScreen;
