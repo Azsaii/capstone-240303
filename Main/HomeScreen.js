@@ -31,21 +31,21 @@ const imageurl5 =
 const imageurl6 =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%8B%9C%ED%97%98%EC%9E%A5%EC%9C%84%EC%B9%98.png?alt=media&token=6442cd8e-b2cf-4d1e-961e-1ac1a95a953b';
 const imageurl7 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%9B%90%EC%84%9C%EC%A0%91%EC%88%98.jpg?alt=media&token=36b1ecbd-9f2d-4fae-b0df-0f6c3ef591a6';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%9B%90%EC%84%9C%EC%A0%91%EC%88%98.png?alt=media&token=88b005ae-c46a-4f40-9cea-388df96cedfa';
 const imageurl8 =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EA%B5%AD%EC%82%AC%ED%8E%B8%EC%B0%AC%EC%9C%84%EC%9B%90%ED%9A%8C.jpg?alt=media&token=2389d417-430d-4466-baae-345b0c19f807';
 const imageurl9 =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%ED%95%9C%EA%B5%AD%EC%82%AC%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4.jpg?alt=media&token=168b5172-1e7b-4e6f-8b4c-57b5a10f4b65';
 const imageicon1 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EA%B8%B0%EC%B6%9C.png?alt=media&token=3990264c-86b8-4c20-869f-a40dc6a7f058';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EA%B8%B0%EC%B6%9C.png?alt=media&token=935af2c3-4f95-4a02-93bb-5db425f1de67';
 const imageicon2 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%8B%9C%EB%8C%80%EB%B3%84.png?alt=media&token=466b4623-72e5-4439-b489-aa8005926477';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%8B%9C%EB%8C%80%EB%B3%84.png?alt=media&token=abb013f1-aa34-4f10-9b6c-28829def5540';
 const imageicon3 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%9C%A0%ED%98%95%EB%B3%84.png?alt=media&token=07c2c45b-d0cf-482b-8178-d16a58ac8a8c';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%9C%A0%ED%98%95%EB%B3%84.png?alt=media&token=b8624708-862d-455a-9c9e-970cd6337495';
 const imageicon4 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%98%A4%EB%8B%B5%EB%85%B8%ED%8A%B8.png?alt=media&token=a2a59d36-19c9-4016-87e5-d86fef39cf93';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%98%A4%EB%8B%B5%EB%85%B8%ED%8A%B8.png?alt=media&token=d4ef9ade-3d62-42ae-a5b4-bd6525dc4d5d';
 const imageicon5 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%95%84%EC%9D%B4%EC%BD%98%EC%97%AD%EC%82%AC%EC%9D%B4%EC%95%BC%EA%B8%B0.png?alt=media&token=a5de5b71-eee9-4202-8b07-66b274cb65cc';
+  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%97%AD%EC%82%AC%EC%9D%B4%EC%95%BC%EA%B8%B0.png?alt=media&token=1714beb0-a163-4e87-a0b4-60af19970931';
 
 const timeDifference = testDate - currentDate;
 const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
@@ -132,7 +132,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
             <View style={styles.webinnerView}>
               {isLoggedIn && (
-                <>
+                <View style={styles.webinnerView2}>
                   <Text style={styles.webloginText}>
                     {userEmail}님 환영합니다.
                   </Text>
@@ -142,10 +142,10 @@ const HomeScreen = ({ navigation }) => {
                   >
                     <Text style={styles.websignupText}>로그아웃</Text>
                   </TouchableHighlight>
-                </>
+                </View>
               )}
               {!isLoggedIn && (
-                <>
+                <View style={styles.webinnerView2}>
                   <TouchableHighlight
                     underlayColor="transparent"
                     onPress={() => navigation.navigate('로그인')}
@@ -158,7 +158,7 @@ const HomeScreen = ({ navigation }) => {
                   >
                     <Text style={styles.websignupText}>회원가입</Text>
                   </TouchableHighlight>
-                </>
+                </View>
               )}
             </View>
             <View style={styles.webImagecontainer}>
@@ -173,7 +173,11 @@ const HomeScreen = ({ navigation }) => {
                     source={{ uri: imageicon1 }}
                     style={styles.webimage2}
                   />
-                  <Text>기출문제 풀이</Text>
+                  <Text
+                    style={{ fontSize: 15, fontWeight: 'bold', marginTop: 3 }}
+                  >
+                    기출문제 풀이
+                  </Text>
                 </View>
               </TouchableWithoutFeedback>
               <TouchableWithoutFeedback
@@ -184,7 +188,11 @@ const HomeScreen = ({ navigation }) => {
                     source={{ uri: imageicon2 }}
                     style={styles.webimage2}
                   />
-                  <Text>시대별 풀이</Text>
+                  <Text
+                    style={{ fontSize: 15, fontWeight: 'bold', marginTop: 3 }}
+                  >
+                    시대별 풀이
+                  </Text>
                 </View>
               </TouchableWithoutFeedback>
               <TouchableWithoutFeedback
@@ -195,7 +203,11 @@ const HomeScreen = ({ navigation }) => {
                     source={{ uri: imageicon3 }}
                     style={styles.webimage2}
                   />
-                  <Text>유형별 풀이</Text>
+                  <Text
+                    style={{ fontSize: 15, fontWeight: 'bold', marginTop: 3 }}
+                  >
+                    유형별 풀이
+                  </Text>
                 </View>
               </TouchableWithoutFeedback>
               <TouchableWithoutFeedback
@@ -206,7 +218,11 @@ const HomeScreen = ({ navigation }) => {
                     source={{ uri: imageicon4 }}
                     style={styles.webimage2}
                   />
-                  <Text>오답노트</Text>
+                  <Text
+                    style={{ fontSize: 15, fontWeight: 'bold', marginTop: 3 }}
+                  >
+                    오답노트
+                  </Text>
                 </View>
               </TouchableWithoutFeedback>
               <TouchableWithoutFeedback
@@ -217,7 +233,11 @@ const HomeScreen = ({ navigation }) => {
                     source={{ uri: imageicon5 }}
                     style={styles.webimage2}
                   />
-                  <Text>역사 이야기</Text>
+                  <Text
+                    style={{ fontSize: 15, fontWeight: 'bold', marginTop: 3 }}
+                  >
+                    역사 이야기
+                  </Text>
                 </View>
               </TouchableWithoutFeedback>
             </View>
@@ -247,9 +267,6 @@ const HomeScreen = ({ navigation }) => {
                   <Image source={{ uri: imageurl7 }} style={styles.webimage2} />
                 </View>
               </TouchableWithoutFeedback>
-            </View>
-            <View style={styles.webBottomContainer}>
-              <View style={styles.webBottomView}></View>
             </View>
           </View>
         </>
@@ -479,6 +496,7 @@ const styles = StyleSheet.create({
   //웹 전용 스타일
   webTotalContainer: {
     backgroundColor: 'white', // 배경색을 흰색으로 설정
+    height: '100%',
   },
   webinnerView: {
     flexDirection: 'row', // 가로로 배치
@@ -486,7 +504,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
     backgroundColor: 'white', // 배경색을 흰색으로 설정
+    height: '4%',
     // 원하는 스타일을 지정하세요
+  },
+  webinnerView2: {
+    flexDirection: 'row', // 가로로 배치
   },
   webloginText: {
     fontSize: 17, // 로그인 텍스트의 폰트 크기
@@ -498,17 +520,19 @@ const styles = StyleSheet.create({
     fontSize: 17, // 회원가입 텍스트의 폰트 크기
     color: 'gray', // 회원가입 텍스트의 글자 색
     marginLeft: 10, // 왼쪽 간격
-    marginRight: 100,
+    marginRight: 155,
     // 회원가입 텍스트의 스타일을 지정하세요
   },
   webImagecontainer: {
-    width: '100%', // 부모 요소의 100% 너비를 가짐
-    height: 280, // 고정된 세로 크기
+    width: '90%', // 부모 요소의 100% 너비를 가짐
+    height: '42%',
+    alignItems: 'center', // 수평 가운데 정렬
+    paddingLeft: '10%',
   },
   webImagecontainer2: {
     position: 'absolute',
     top: 2, // 부모 요소의 상단에 배치
-    left: 100, // 부모 요소의 왼쪽에 배치
+    left: '10%',
     width: 185,
     height: 40,
     zIndex: 9999, // 다른 요소들 위로 오게 함
@@ -516,6 +540,8 @@ const styles = StyleSheet.create({
   webimage: {
     width: '100%',
     height: '100%', // 부모 요소인 웹 이미지 컨테이너와 동일한 크기를 가짐
+    alignItems: 'center', // 수평 가운데 정렬
+    justifyContent: 'center', // 수직 가운데 정렬
   },
   webimage2: {
     width: '100%',
@@ -530,7 +556,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // 요소를 가로로 정렬
     backgroundColor: 'white',
     width: '70%',
-    height: 150,
+    height: '23%',
     alignItems: 'center', // 수평 가운데 정렬
     justifyContent: 'center', // 수직 가운데 정렬
     marginLeft: '15%',
@@ -539,14 +565,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // 요소를 가로로 정렬
     backgroundColor: 'white',
     width: '80%',
-    height: 150,
+    height: '22%',
     justifyContent: 'center', // 수직 가운데 정렬
     marginLeft: '10%',
     marginTop: 20,
   },
   webimageIconcontainer: {
-    width: 100,
-    height: 100,
+    width: '10%',
+    height: '69%',
     alignItems: 'center', // 수평 가운데 정렬
     justifyContent: 'center', // 수직 가운데 정렬
     marginHorizontal: 20, // 요소들 사이의 가로 간격을 조절
@@ -558,11 +584,12 @@ const styles = StyleSheet.create({
   webImage4Container: {
     width: '15%',
     height: '100%',
+    marginLeft: 5,
   },
   webImage5Container: {
-    width: '7.5%',
-    height: '82%',
-    marginLeft: 50,
+    width: '10%',
+    height: '80%',
+    marginLeft: 20,
   },
   webImage6Container: {
     width: '15%',
