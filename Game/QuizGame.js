@@ -151,7 +151,7 @@ const QuizGame = ({ navigation }) => {
       // 랜덤 키워드 5개 뽑기
       let selectedKeywords = [...keywords]
         .sort(() => 0.5 - Math.random())
-        .slice(0, 5);
+        .slice(0, 8);
 
       // currentKeyword를 제외
       selectedKeywords = selectedKeywords.filter(
