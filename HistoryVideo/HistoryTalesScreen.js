@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import {Modal, Text, View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Pressable } from 'react-native';
+import {Modal, Text, View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Pressable, ScrollView, TouchableWithoutFeedback } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { SelectList, MultipleSelectList } from 'react-native-dropdown-select-list';
 import { AntDesign } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Feather } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
 import { doc, getDoc, collection, deleteDoc, addDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { Button, Card, TextInput, List, IconButton, MD3Colors, Divider, Icon } from 'react-native-paper';
+import SlidingUpPanel from 'rn-sliding-up-panel';
 
 const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     const [videos, setVideos] = useState([]);
@@ -24,6 +25,15 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     const [selected, setSelected] = React.useState("");
 
     const flatListRef = useRef();
+    const _panel = useRef(null);
+
+    const openPanel = () => {
+        _panel.current?.show();
+    };
+
+    const closePanel = () => {
+        _panel.current?.hide();
+    };
 
     const data = [
         '고조선', '삼국', '남북국 시대', '후삼국', '고려', '조선', '개항기', '일제강점기', '해방 이후'
@@ -309,6 +319,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                                     setComments(comments); 
                                     setselectedVideo(item)
                                     setModalVisible(true);
+                                    openPanel();
                                 }}>댓글</Button>
                                 <Button icon="bookmark" buttonColor='white' textColor='black' mode="elevated" title='Save Button' onPress={() => addFavorite(item)}>저장하기</Button>
                             </View>
@@ -320,65 +331,56 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                 />
 
 
-                <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    Alert.alert('Modal has been closed.');
-                    setModalVisible(!modalVisible);
-                }}
-                >
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 35, marginTop: 10, marginBottom: 10, padding: 10 }}><Icon source="message-reply-text" size={35}/> 댓글</Text>
-                    <Divider />
-                    
-                    {
-                        comments.map((comment) => {
-                            return (
+            <SlidingUpPanel
+                ref={_panel}
+                draggableRange={{ top: 600, bottom: 0 }}
+                height={600}
+            >
+                {(dragHandler) => (
+                    <View style={styles.panel}>
+                        <View style={styles.panelHeader} {...dragHandler}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 30, padding: 10 }}>
+                                <Icon source="message-reply-text" size={30} /> 댓글
+                            </Text>
+                            <TextInput
+                                    style={{ backgroundColor: 'white' }} {...dragHandler}
+                                    right={<TextInput.Icon icon="send-circle" onPress={submitComments} />}
+                                    placeholder={
+                                        isLoggedIn ? '댓글을 작성해주세요!' : '로그인하고 댓글을 작성해주세요!'
+                                    }
+                                    onChangeText={(text) => setComment(text)}
+                                    value={comment}
+                                    editable={isLoggedIn}
+                                />
+                        </View>
+                        <Divider />
+                        
+                        <ScrollView style={styles.panelContent}
+                        contentContainerStyle={{ padding: 20}}>
+                            {comments.map((comment) => (
                                 <React.Fragment key={comment.docId}>
-                                    <View style={{ display: 'flex', width: '100%', flexDirection: 'row' }}>
+                                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                         <List.Item
-                                        title={comment.comment}
-                                        description={comment.userEmail}
-                                        left={(props) => <List.Icon {...props} icon="comment" />}
+                                            title={comment.comment}
+                                            description={comment.userEmail}
+                                            left={(props) => <List.Icon {...props} icon="comment" />}
                                         />
                                         {comment.userEmail === userEmail && (
-                                        <IconButton
-                                            icon="trash-can"
-                                            iconColor={MD3Colors.error50}
-                                            size={20}
-                                            onPress={() => deleteComment(comment.docId)}
-                                        />
+                                            <IconButton
+                                                icon="trash-can"
+                                                iconColor={MD3Colors.error50}
+                                                size={20}
+                                                onPress={() => deleteComment(comment.docId)}
+                                            />
                                         )}
                                     </View>
-
-                                    <Divider/>
+                                    <Divider />
                                 </React.Fragment>
-                            );
-                        })
-                        
-                    }
-
-                            
-                    <TextInput
-                        style={{width: '100%', marginTop: 20, marginBottom: 20, backgroundColor: 'white'}}
-                        right={<TextInput.Icon icon="send-circle" onPress={submitComments} />}
-                        placeholder={
-                            isLoggedIn ? '댓글을 작성해주세요!' : '로그인하고 댓글을 작성해주세요!'
-                        }
-
-                        onChangeText={(text) => setComment(text)} // 입력값을 상태로 관리
-                        value={comment}
-                        editable={isLoggedIn}
-                    />
-
-                    <Button icon="close" buttonColor='white' textColor='black' mode="elevated" title='Comments Button' onPress={() => setModalVisible(!modalVisible)}>닫기</Button>
-            
+                            ))}
+                        </ScrollView>
                     </View>
-                </View>
-            </Modal>
+                )}
+            </SlidingUpPanel>
         </View>
     );
 };
@@ -433,6 +435,19 @@ const styles = StyleSheet.create({
       modalText: {
         marginBottom: 15,
         textAlign: 'center',
+      },
+
+      panel: {
+        flex: 1,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+      },
+      panelHeader: {
+        padding: 20,
+        backgroundColor: 'white'
+      },
+      panelContent: {
+        margin: 20
       },
 });
 
