@@ -99,7 +99,9 @@ const ProblemDetail = ({ route, navigation }) => {
   const [answers, setAnswers] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userChoices, setUserChoices] = useState({});
-  const [bookmarks, setBookmarks] = useState([]); // 각 문제의 북마크 여부를 저장
+  //const [bookmarks, setBookmarks] = useState([]); // 북마크 - 김인우 저장
+  const [originBookMark, setOriginBookMark] = useState([]); // 필터링 안된 기존 북마크 저장
+  const [indexBookMark, setIndexBookMark] = useState([]); // 북마크 인덱스 저장
 
   // 로그인 정보
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
@@ -155,69 +157,136 @@ const ProblemDetail = ({ route, navigation }) => {
     fetchProblems();
   }, [examDoc, answerDoc]);
 
-  // 북마크 가져오기
-  useEffect(() => {
+  // 북마크 가져오기 - 김인우
+  // useEffect(() => {
+  //   if (!isLoggedIn) return;
+  //   const bookmarkRef = doc(
+  //     firestore,
+  //     'users',
+  //     userEmail,
+  //     'bookmarks',
+  //     examDoc.id
+  //   );
+
+  //   const unsubscribe = onSnapshot(bookmarkRef, (snapshot) => {
+  //     const data = snapshot.data();
+  //     if (data && data.bookmarks) {
+  //       const updatedBookmarks = data.bookmarks.map((bookmark) => bookmark - 1);
+  //       setBookmarks(updatedBookmarks);
+  //     } else {
+  //       // 데이터가 없는 경우 상태 초기화
+  //       setBookmarks([]);
+  //     }
+  //   });
+
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [userId]);
+
+  // 북마크 가져오기 - 이상윤
+  const fetchBookmarks = async () => {
     if (!isLoggedIn) return;
-    const bookmarkRef = doc(
-      firestore,
-      'users',
-      userEmail,
-      'bookmarks',
-      examDoc.id
-    );
 
-    const unsubscribe = onSnapshot(bookmarkRef, (snapshot) => {
-      const data = snapshot.data();
-      if (data && data.bookmarks) {
-        const updatedBookmarks = data.bookmarks.map((bookmark) => bookmark - 1);
-        setBookmarks(updatedBookmarks);
-      } else {
-        // 데이터가 없는 경우 상태 초기화
-        setBookmarks([]);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [userId]);
-
-  // 북마크 저장
-  const bookmarkSave = async () => {
-    if (!isLoggedIn) return;
-    if (bookmarks.length === 0) {
-      return;
-    }
-
-    const bookmarkRef = doc(
-      firestore,
-      'users',
-      userEmail,
-      'bookmarks',
-      examDoc.id
-    );
-
-    const updatedBookmarks = bookmarks.map((bookmark) => bookmark + 1);
-
+    const bookMarkRef = collection(firestore, 'users', userEmail, 'bookMark');
     try {
-      await setDoc(bookmarkRef, {
-        bookmarks: updatedBookmarks,
+      const querySnapshot = await getDocs(bookMarkRef);
+
+      // 6101, 6103, 6201, 6335, ... 등 북마크 중 회차에 맞는 id만 필터링
+      const filteredIds = [];
+      const originIds = [];
+      querySnapshot.forEach((doc) => {
+        if (doc.id.substring(0, 2) === examDoc.id.substring(0, 2)) {
+          filteredIds.push(doc.id);
+        } else {
+          originIds.push(doc.id);
+        }
       });
-      console.log('Data updated successfully.');
+      setOriginBookMark(originIds);
+
+      // 북마크를 인덱스 형태로 추가 저장. 예) 6101 -> 0, 6102 -> 1, ...
+      const indexArray = filteredIds.map((id) => {
+        return id - examDoc.id * 100 - 1;
+      });
+      setIndexBookMark(indexArray);
+
+      console.log('Bookmarks fetched and filtered successfully.');
     } catch (error) {
-      console.error('Data could not be saved.' + error);
+      console.error('Error fetching bookmarks: ', error);
     }
   };
+  useEffect(() => {
+    fetchBookmarks();
+  }, [userId]);
+
+  // 북마크 저장 - 김인우
+  // const bookmarkSave1 = async () => {
+  //   if (!isLoggedIn) return;
+  //   if (bookmarks.length === 0) {
+  //     return;
+  //   }
+
+  //   const bookmarkRef = doc(
+  //     firestore,
+  //     'users',
+  //     userEmail,
+  //     'bookmarks',
+  //     examDoc.id
+  //   );
+
+  //   const updatedBookmarks = bookmarks.map((bookmark) => bookmark + 1);
+
+  //   try {
+  //     await setDoc(bookmarkRef, {
+  //       bookmarks: updatedBookmarks,
+  //     });
+  //     console.log('Data updated successfully.');
+  //   } catch (error) {
+  //     console.error('Data could not be saved.' + error);
+  //   }
+  // };
+
+  // 북마크 저장 - 이상윤
+  useEffect(() => {
+    const bookmarkSave = async () => {
+      if (!isLoggedIn) return;
+      if (indexBookMark.length === 0) {
+        return;
+      }
+
+      try {
+        originBookMark.forEach(async (item) => {
+          const itemRef = doc(
+            firestore,
+            'users',
+            userEmail,
+            'bookMark',
+            item.toString()
+          );
+          // 문서를 빈 상태로 저장
+          await setDoc(itemRef, {});
+        });
+
+        console.log('All items saved successfully.');
+      } catch (error) {
+        console.error('Data could not be saved. ' + error);
+      }
+    };
+
+    if (originBookMark.length > 0) {
+      bookmarkSave();
+    }
+  }, [originBookMark]);
 
   // 북마크 선택 시 상태 변경
   const handleBookmark = (index) => {
     if (!isLoggedIn) return;
-    if (bookmarks.includes(index)) {
+    if (indexBookMark.includes(index)) {
       // 이미 북마크한 문제라면 북마크 해제
-      setBookmarks(bookmarks.filter((i) => i !== index));
+      setIndexBookMark(indexBookMark.filter((i) => i !== index));
     } else {
       // 아직 북마크하지 않은 문제라면 북마크 설정
-      setBookmarks([...bookmarks, index]);
+      setIndexBookMark([...indexBookMark, index]);
     }
   };
 
@@ -238,12 +307,21 @@ const ProblemDetail = ({ route, navigation }) => {
       [problems[currentIndex].id]: number,
     }));
   };
-  const examId = examDoc.id;
-  const move = () => {
+
+  // 북마크 저장 후 결과 페이지로 이동
+  const saveBookMarkAndNavigate = () => {
     if (isLoggedIn) {
       // 로그인 되었을 떄만 북마크 저장
-      bookmarkSave();
+      // originBookMark 상태변수 업데이트 시 useEffect에 의해 저장 로직 실행됨.
+      const saveBookMarkArray = indexBookMark.map((id) => {
+        return id + examDoc.id * 100 + 1;
+      });
+      setOriginBookMark((prevOriginBookMark) => [
+        ...prevOriginBookMark,
+        ...saveBookMarkArray,
+      ]);
     }
+    const examId = examDoc.id;
     navigation.navigate('PracticeResult', {
       userChoices,
       problems,
@@ -251,6 +329,7 @@ const ProblemDetail = ({ route, navigation }) => {
       examId,
     });
   };
+
   // 제출 확인 창
   const handleSubmit = (dataRef) => {
     if (isWeb) {
@@ -272,7 +351,7 @@ const ProblemDetail = ({ route, navigation }) => {
         {
           text: '확인',
           onPress: () => {
-            move();
+            saveBookMarkAndNavigate();
           },
         },
       ]);
@@ -300,9 +379,11 @@ const ProblemDetail = ({ route, navigation }) => {
             {isLoggedIn ? (
               <TouchableOpacity onPress={() => handleBookmark(currentIndex)}>
                 <FontAwesome
-                  name={bookmarks.includes(currentIndex) ? 'star' : 'star-o'}
+                  name={
+                    indexBookMark.includes(currentIndex) ? 'star' : 'star-o'
+                  }
                   size={30}
-                  color={bookmarks.includes(currentIndex) ? 'gold' : 'gray'}
+                  color={indexBookMark.includes(currentIndex) ? 'gold' : 'gray'}
                 />
               </TouchableOpacity>
             ) : null}
