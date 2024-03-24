@@ -9,14 +9,7 @@ import {
   Alert,
   LogBox,
 } from 'react-native';
-import {
-  collection,
-  getDocs,
-  doc,
-  setDoc,
-  onSnapshot,
-  updateDoc,
-} from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { FontAwesome } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
 import { useSelector } from 'react-redux';
@@ -99,7 +92,6 @@ const ProblemDetail = ({ route, navigation }) => {
   const [answers, setAnswers] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userChoices, setUserChoices] = useState({});
-  //const [bookmarks, setBookmarks] = useState([]); // 북마크 - 김인우 저장
   const [originBookMark, setOriginBookMark] = useState([]); // 필터링 안된 기존 북마크 저장
   const [indexBookMark, setIndexBookMark] = useState([]); // 북마크 인덱스 저장
 
@@ -157,34 +149,7 @@ const ProblemDetail = ({ route, navigation }) => {
     fetchProblems();
   }, [examDoc, answerDoc]);
 
-  // 북마크 가져오기 - 김인우
-  // useEffect(() => {
-  //   if (!isLoggedIn) return;
-  //   const bookmarkRef = doc(
-  //     firestore,
-  //     'users',
-  //     userEmail,
-  //     'bookmarks',
-  //     examDoc.id
-  //   );
-
-  //   const unsubscribe = onSnapshot(bookmarkRef, (snapshot) => {
-  //     const data = snapshot.data();
-  //     if (data && data.bookmarks) {
-  //       const updatedBookmarks = data.bookmarks.map((bookmark) => bookmark - 1);
-  //       setBookmarks(updatedBookmarks);
-  //     } else {
-  //       // 데이터가 없는 경우 상태 초기화
-  //       setBookmarks([]);
-  //     }
-  //   });
-
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [userId]);
-
-  // 북마크 가져오기 - 이상윤
+  // 북마크 가져오기
   const fetchBookmarks = async () => {
     if (!isLoggedIn) return;
 
@@ -219,34 +184,7 @@ const ProblemDetail = ({ route, navigation }) => {
     fetchBookmarks();
   }, [userId]);
 
-  // 북마크 저장 - 김인우
-  // const bookmarkSave1 = async () => {
-  //   if (!isLoggedIn) return;
-  //   if (bookmarks.length === 0) {
-  //     return;
-  //   }
-
-  //   const bookmarkRef = doc(
-  //     firestore,
-  //     'users',
-  //     userEmail,
-  //     'bookmarks',
-  //     examDoc.id
-  //   );
-
-  //   const updatedBookmarks = bookmarks.map((bookmark) => bookmark + 1);
-
-  //   try {
-  //     await setDoc(bookmarkRef, {
-  //       bookmarks: updatedBookmarks,
-  //     });
-  //     console.log('Data updated successfully.');
-  //   } catch (error) {
-  //     console.error('Data could not be saved.' + error);
-  //   }
-  // };
-
-  // 북마크 저장 - 이상윤
+  // 북마크 저장
   useEffect(() => {
     const bookmarkSave = async () => {
       if (!isLoggedIn) return;
@@ -338,7 +276,7 @@ const ProblemDetail = ({ route, navigation }) => {
         '답을 제출하시겠습니까?'
       );
       if (userConfirmed) {
-        move();
+        saveBookMarkAndNavigate();
       }
     } else {
       // userChoices를 PracticeResult 화면으로 전달

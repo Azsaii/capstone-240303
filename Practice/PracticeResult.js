@@ -9,8 +9,16 @@ import {
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  collection,
+  getDocs,
+} from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
+import { set } from '@firebase/database';
 
 const styles = StyleSheet.create({
   container: {
@@ -94,15 +102,25 @@ const PracticeResult = ({ route, navigation }) => {
   const [prevWrongTypes, setPrevWrongTypes] = useState([]);
   const initialState = { wrongTypes: Array(9).fill(0), saveNeeded: false };
 
-  // 틀린 문제의 인덱스를 0으로 설정
-  let wrongIndexes = new Array(choicesArray.length).fill(1);
-  let newWrongTypes = initialState.wrongTypes;
+  const [originWrongEras, setOriginWrongEras] = useState(new Array(9).fill(0)); // 기존 오답들 시대 데이터
+  const [originWrongTypes, setOriginWrongTypes] = useState(
+    new Array(11).fill(0)
+  ); // 기존 오답들 유형 데이터
+
+  const [newWrongEras, setNewWrongEras] = useState(new Array(9).fill(0)); // 새 오답 시대 데이터
+  const [newWrongTypes, setNewWrongTypes] = useState(new Array(11).fill(0)); // 새 유형 시대 데이터
+
+  const [saveWrongEras, setSaveWrongEras] = useState(new Array(9).fill(0)); // 저장용 시대 데이터
+  const [saveWrongTypes, setSaveWrongTypes] = useState(new Array(11).fill(0)); // 저장용 시대 데이터
+
+  const [wrongIndexes, setWrongIndexes] = useState(new Array(50).fill(1)); // 오답 인덱스
+  const [totalScore, setTotalScrore] = useState(100);
+
+  //let newWrongTypes = initialState.wrongTypes;
 
   // 로그인 정보
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-
-  let totalScore = 100;
 
   // 뒤로가기 시 메인화면으로 이동
   useEffect(() => {
@@ -120,77 +138,6 @@ const PracticeResult = ({ route, navigation }) => {
     return () => backHandler.remove();
   }, []);
 
-  function reducer(state, action) {
-    switch (action.type) {
-      case 'setWrongTypes':
-        return { ...state, wrongTypes: action.payload, saveNeeded: true };
-      case 'saveDone':
-        return { ...state, saveNeeded: false };
-      default:
-        throw new Error();
-    }
-  }
-
-  const [state, dispatch] = useReducer(reducer, initialState); // 분류값 저장 리듀서
-
-  // wrongTypes 변경 후에 wrongTypesSave 호출
-  useEffect(() => {
-    if (state.saveNeeded) {
-      wrongTypesSave();
-      dispatch({ type: 'saveDone' });
-    }
-  }, [state]);
-
-  // 오답 분류값 가져오기 - 오답 분류값은 통계에서 사용됨
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    const userRef = doc(firestore, 'users', userEmail, 'koreanHistory', examId);
-    const getTypesData = onSnapshot(userRef, (snapshot) => {
-      const data = snapshot.data();
-      if (data && data.wrongTypes) {
-        setPrevWrongTypes(data.wrongTypes);
-      }
-    });
-
-    return () => {
-      getTypesData();
-    };
-  }, [isLoggedIn]);
-
-  // 오답 인덱스 저장
-  choicesArray.forEach(([index, value], i) => {
-    const answer = answers.find((answer) => answer.id === index);
-    const problem = problems.find((problem) => problem.id === index);
-
-    if (answer && problem && value != answer.data.answer) {
-      totalScore -= problem.data.score;
-      wrongIndexes[i] = 0;
-    }
-  });
-
-  useEffect(() => {
-    if (state.saveNeeded) return; // 무한루프 방지
-    initialState.wrongTypes = prevWrongTypes;
-
-    choicesArray.forEach(([index, value], i) => {
-      const answer = answers.find((answer) => answer.id === index);
-      const problem = problems.find((problem) => problem.id === index);
-
-      if (answer && problem && value != answer.data.answer) {
-        // era에 따른 오답 분류 인덱스 증가
-        const eraIndex = getEraIndex(problem.data.era);
-        if (eraIndex != -1) newWrongTypes[eraIndex]++;
-      }
-    });
-    // newWrongTypes와 wrongTypes가 다르면 상태 업데이트
-    if (
-      JSON.stringify(newWrongTypes) !== JSON.stringify(initialState.wrongTypes)
-    ) {
-      // wrongTypes 변경
-      dispatch({ type: 'setWrongTypes', payload: newWrongTypes });
-    }
-  }, [prevWrongTypes]);
-
   // era 이름에 따라 인덱스를 반환하는 함수
   function getEraIndex(eraName) {
     const eras = [
@@ -207,21 +154,352 @@ const PracticeResult = ({ route, navigation }) => {
     return eras.indexOf(eraName);
   }
 
-  // 오답 분류값 저장
-  const wrongTypesSave = async () => {
-    if (!isLoggedIn) return;
-    const userRef = doc(firestore, 'users', userEmail, 'koreanHistory', examId);
+  // type 이름에 따라 인덱스를 반환하는 함수
+  function getTypeIndex(typeName) {
+    const types = [
+      '문화',
+      '유물',
+      '사건',
+      '인물',
+      '장소',
+      '그림',
+      '제도',
+      '일제강점기',
+      '조약',
+      '단체',
+      '미분류',
+    ];
+    return types.indexOf(typeName);
+  }
 
-    try {
-      await setDoc(userRef, {
-        wrongTypes: state.wrongTypes,
-      });
-      setCheck = 0;
-      console.log('Data updated successfully.');
-    } catch (error) {
-      console.error('Data could not be saved.' + error);
+  // 새 오답 분류 정보 저장
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const updatedWrongEras = [...newWrongEras];
+    const updatedWrongTypes = [...newWrongTypes];
+    let saveWrongIndexes = new Array(50).fill(1);
+    let score = 100;
+
+    // 오답 인덱스 저장
+    choicesArray.forEach(([index, value], i) => {
+      const answer = answers.find((answer) => answer.id === index);
+      const problem = problems.find((problem) => problem.id === index);
+
+      if (answer && problem && value != answer.data.answer) {
+        score -= problem.data.score;
+        saveWrongIndexes[i] = 0;
+
+        // 오답에 해당하는 era의 인덱스를 찾아 updatedWrongEras 배열의 해당 위치 값을 1 증가
+        const eraIndex = getEraIndex(problem.data.era);
+        if (eraIndex !== -1) {
+          updatedWrongEras[eraIndex] += 1; // 해당 era 인덱스의 값을 1 증가
+        }
+
+        // 오답 문제 유형 저장
+        const typeIndexArray = problem.data.type;
+        for (let i = 0; i < typeIndexArray.length; i++) {
+          const typeIndex = getTypeIndex(typeIndexArray[i]);
+          if (typeIndex !== -1) {
+            updatedWrongTypes[typeIndex] += 1; // 해당 type 인덱스의 값을 1 증가
+          }
+        }
+      }
+    });
+
+    setNewWrongEras(updatedWrongEras);
+    setNewWrongTypes(updatedWrongTypes);
+    setWrongIndexes(saveWrongIndexes);
+    setTotalScrore(score);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      const statisticsCollectionRef = collection(
+        firestore,
+        'users',
+        userEmail,
+        'wrongStatistics'
+      );
+      try {
+        const querySnapshot = await getDocs(statisticsCollectionRef);
+        querySnapshot.forEach((docSnap) => {
+          if (docSnap.exists()) {
+            console.log(docSnap.id);
+            const data = docSnap.data();
+            console.log(data);
+            const key =
+              'wrong' +
+              docSnap.id.charAt(0).toUpperCase() +
+              docSnap.id.slice(1);
+            // key를 기반으로 적절한 상태 업데이트 함수와 새로운 값들을 설정합니다.
+            let setStateFunction, newValues;
+            if (key === 'wrongEra') {
+              setStateFunction = setOriginWrongEras;
+              newValues = new Array(9).fill(0);
+            } else if (key === 'wrongType') {
+              setStateFunction = setOriginWrongTypes;
+              newValues = new Array(11).fill(0);
+            }
+
+            // 상태 업데이트 함수와 새로운 값들이 정의된 경우에만 업데이트를 실행합니다.
+            updateStateFromSnapshot(data, key, setStateFunction, newValues);
+          } else {
+            console.log(
+              `No document found for ${docSnap.id}, creating a new one.`
+            );
+            // 새 문서 생성 로직을 여기에 추가할 수 있습니다.
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching statistics data: ', error);
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
+  function updateStateFromSnapshot(data, key, setStateFunction, newValues) {
+    console.log('tset1');
+    if (data[key]) {
+      console.log('tset2');
+      console.log(`data.${key}: ` + data[key]);
+      let ch = 0;
+      for (let i = 0; i < data[key].length; i++) {
+        if (data[key][i] !== 0) {
+          ch = 1;
+          break;
+        }
+      }
+      if (ch == 1) {
+        const updatedValues = newValues.map(
+          (value, index) => value + (data[key][index] || 0)
+        );
+        setStateFunction(updatedValues);
+      } else {
+        console.log(`No data found for ${key}, initializing.`);
+        setStateFunction([...newValues]); // 새 값으로 초기화
+      }
     }
-  };
+  }
+
+  useEffect(() => {
+    console.log('originWrongEras: ' + originWrongEras);
+    console.log('newWrongEras: ' + newWrongEras);
+
+    const arr = new Array(9).fill(0);
+    for (let i = 0; i < newWrongEras.length; i++) {
+      arr[i] = newWrongEras[i] + originWrongEras[i];
+    }
+    setSaveWrongEras(arr);
+  }, [newWrongEras, originWrongEras]);
+
+  useEffect(() => {
+    console.log('originWrongTypes: ' + originWrongTypes);
+    console.log('newWrongTypes: ' + newWrongTypes);
+
+    const arr = new Array(11).fill(0);
+    for (let i = 0; i < newWrongTypes.length; i++) {
+      arr[i] = newWrongTypes[i] + originWrongTypes[i];
+    }
+    setSaveWrongTypes(arr);
+  }, [newWrongTypes, originWrongTypes]);
+
+  // db 반영
+  useEffect(() => {
+    // save path
+    const wrongEraRef = doc(
+      firestore,
+      'users',
+      userEmail,
+      'wrongStatistics',
+      'era'
+    );
+    const wrongTypeRef = doc(
+      firestore,
+      'users',
+      userEmail,
+      'wrongStatistics',
+      'type'
+    );
+    const wrongStatisticsSave = async () => {
+      try {
+        await setDoc(wrongEraRef, {
+          wrongEra: saveWrongEras,
+        });
+        await setDoc(wrongTypeRef, {
+          wrongType: saveWrongTypes,
+        });
+        console.log('Data updated successfully.');
+      } catch (error) {
+        console.error('Data could not be saved.' + error);
+      }
+    };
+    wrongStatisticsSave();
+  }, [saveWrongEras, saveWrongTypes]);
+
+  // 새 오답 분류 데이터 생성 후 상태변수에 반영
+  // useEffect(() => {
+  //   const updatedWrongEras = [...newWrongEras];
+  //   const updatedWrongTypes = [...newWrongTypes];
+
+  //   const eraUpdate = async () => {
+  //     console.log('updatedWrongEras: ' + updatedWrongEras);
+  //     const wrongEraRef = doc(
+  //       firestore,
+  //       'users',
+  //       userEmail,
+  //       'wrongStatistics',
+  //       'era'
+  //     );
+  //     const wrongEraDoc = await getDoc(wrongEraRef);
+
+  //     if (wrongEraDoc.exists()) {
+  //       const data = wrongEraDoc.data();
+  //       if (data.wrongEra) {
+  //         console.log('data.wrongEra: ' + data.wrongEra);
+  //         for (let i = 0; i < updatedWrongEras.length; i++) {
+  //           updatedWrongEras[i] += data.wrongEra[i];
+  //         }
+  //         setSaveWrongEras(updatedWrongEras);
+  //       } else {
+  //         console.log('test1');
+  //         eraUpdate();
+  //       }
+  //     }
+  //   };
+
+  //   const typeUpdate = async () => {
+  //     console.log('updatedWrongTypes: ' + updatedWrongTypes);
+
+  //     const wrongTypeRef = doc(
+  //       firestore,
+  //       'users',
+  //       userEmail,
+  //       'wrongStatistics',
+  //       'type'
+  //     );
+
+  //     const wrongTypeDoc = await getDoc(wrongTypeRef);
+
+  //     if (wrongTypeDoc.exists()) {
+  //       const data = wrongTypeDoc.data();
+  //       if (data.wrongType) {
+  //         console.log('data.wrongType: ' + data.wrongType);
+  //         for (let i = 0; i < updatedWrongTypes.length; i++) {
+  //           updatedWrongTypes[i] += data.wrongType[i];
+  //         }
+  //         setSaveWrongTypes(updatedWrongTypes);
+  //       } else {
+  //         console.log('test2');
+  //         typeUpdate();
+  //       }
+  //     }
+  //   };
+
+  //   eraUpdate();
+  //   typeUpdate();
+  // }, [newWrongEras, newWrongTypes]);
+
+  // function reducer(state, action) {
+  //   switch (action.type) {
+  //     case 'setNewWrongTypes':
+  //       return { ...state, wrongTypes: action.payload, saveNeeded: true };
+  //     case 'saveDone':
+  //       return { ...state, saveNeeded: false };
+  //     default:
+  //       throw new Error();
+  //   }
+  // }
+
+  // const [state, dispatch] = useReducer(reducer, initialState); // 분류값 저장 리듀서
+
+  // // wrongTypes 변경 후에 wrongTypesSave 호출
+  // useEffect(() => {
+  //   if (state.saveNeeded) {
+  //     wrongTypesSave();
+  //     dispatch({ type: 'saveDone' });
+  //   }
+  // }, [state]);
+
+  // 오답 분류값 가져오기 - 오답 분류값은 통계에서 사용됨
+  // useEffect(() => {
+  //   if (!isLoggedIn) return;
+  //   const userRef = doc(firestore, 'users', userEmail, 'koreanHistory', examId);
+  //   const getTypesData = onSnapshot(userRef, (snapshot) => {
+  //     const data = snapshot.data();
+  //     if (data && data.wrongTypes) {
+  //       setPrevWrongTypes(data.wrongTypes);
+  //     }
+  //   });
+
+  //   return () => {
+  //     getTypesData();
+  //   };
+  // }, [isLoggedIn]);
+
+  // useEffect(() => {
+  //   if (state.saveNeeded) return; // 무한루프 방지
+  //   initialState.wrongTypes = prevWrongTypes;
+
+  //   choicesArray.forEach(([index, value], i) => {
+  //     const answer = answers.find((answer) => answer.id === index);
+  //     const problem = problems.find((problem) => problem.id === index);
+
+  //     if (answer && problem && value != answer.data.answer) {
+  //       // era에 따른 오답 분류 인덱스 증가
+  //       const eraIndex = getEraIndex(problem.data.era);
+  //       if (eraIndex != -1) newWrongTypes[eraIndex]++;
+  //     }
+  //   });
+  //   // newWrongTypes와 wrongTypes가 다르면 상태 업데이트
+  //   if (
+  //     JSON.stringify(newWrongTypes) !== JSON.stringify(initialState.wrongTypes)
+  //   ) {
+  //     // wrongTypes 변경
+  //     dispatch({ type: 'setNewWrongTypes', payload: newWrongTypes });
+  //   }
+  // }, [prevWrongTypes]);
+
+  // 오답 분류값 저장
+  // const wrongTypesSave = async () => {
+  //   if (!isLoggedIn) return;
+  //   const userRef = doc(firestore, 'users', userEmail, 'koreanHistory', examId);
+
+  //   try {
+  //     await setDoc(userRef, {
+  //       wrongTypes: state.wrongTypes,
+  //     });
+  //     setCheck = 0;
+  //     console.log('Data updated successfully.');
+  //   } catch (error) {
+  //     console.error('Data could not be saved.' + error);
+  //   }
+  // };
+
+  // 저장용 데이터 업데이트
+  // useEffect(() => {
+  //   let a1 = new Array(9).fill(0);
+  //   let a2 = new Array(11).fill(0);
+
+  //   console.log('newWrongEras: ' + newWrongEras);
+  //   console.log('originWrongEras: ' + originWrongEras);
+  //   console.log('newWrongTypes: ' + newWrongTypes);
+  //   console.log('originWrongTypes: ' + originWrongTypes);
+
+  //   for (let i = 0; i < newWrongEras.length; i++) {
+  //     a1[i] = newWrongEras[i] + originWrongEras[i];
+  //   }
+
+  //   for (let i = 0; i < newWrongTypes.length; i++) {
+  //     a2[i] = newWrongTypes[i] + originWrongTypes[i];
+  //   }
+
+  //   console.log('a1: ' + a1);
+  //   console.log('a2: ' + a2);
+
+  //   setSaveWrongEras(a1);
+  //   setSaveWrongTypes(a2);
+  // }, [newWrongEras, newWrongTypes, originWrongEras, originWrongTypes]);
 
   // 해설 버튼 클릭 시 이동
   const handleCommentary = (index) => {

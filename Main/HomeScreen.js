@@ -17,6 +17,7 @@ import { ScrollRestoration } from 'react-router-dom';
 const Achievement = 52;
 const currentDate = new Date();
 const testDate = new Date('2024-05-25');
+//const MainImage = 'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%EB%B0%B0%EA%B2%BD.png?alt=media&token=d57d8462-d4f1-43b6-a92e-968d30cb27f0'
 const imageurl =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EB%B0%B0%EA%B2%BD.webp?alt=media&token=cabac6ad-77a8-4c88-9366-a33cd01c5bf6';
 const imageurl2 =
