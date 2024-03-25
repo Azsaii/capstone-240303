@@ -13,6 +13,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   onSnapshot,
   collection,
   getDocs,
@@ -212,56 +213,122 @@ const PracticeResult = ({ route, navigation }) => {
     setTotalScrore(score);
   }, [isLoggedIn]);
 
+  // useEffect(() => {
+  //   const fetchAllData = async () => {
+  //     const statisticsCollectionRef = collection(
+  //       firestore,
+  //       'users',
+  //       userEmail,
+  //       'wrongStatistics'
+  //     );
+  //     try {
+  //       const querySnapshot = await getDocs(statisticsCollectionRef);
+  //       querySnapshot.forEach((docSnap) => {
+  //         if (docSnap.exists()) {
+  //           console.log(docSnap.id);
+  //           const data = docSnap.data();
+  //           console.log(data);
+  //           // const key =
+  //           //   'wrong' +
+  //           //   docSnap.id.charAt(0).toUpperCase() +
+  //           //   docSnap.id.slice(1);
+  //           const key = docSnap.id;
+  //           // key를 기반으로 적절한 상태 업데이트 함수와 새로운 값들을 설정합니다.
+  //           let setStateFunction, newValues;
+  //           if (key === 'era') {
+  //             setStateFunction = setOriginWrongEras;
+  //             newValues = new Array(9).fill(0);
+  //           } else if (key === 'type') {
+  //             setStateFunction = setOriginWrongTypes;
+  //             newValues = new Array(11).fill(0);
+  //           }
+
+  //           // 상태 업데이트 함수와 새로운 값들이 정의된 경우에만 업데이트를 실행합니다.
+  //           updateStateFromSnapshot(data, key, setStateFunction, newValues);
+  //         } else {
+  //           console.log(
+  //             `No document found for ${docSnap.id}, creating a new one.`
+  //           );
+  //           // 새 문서 생성 로직을 여기에 추가할 수 있습니다.
+  //         }
+  //       });
+  //     } catch (error) {
+  //       console.error('Error fetching statistics data: ', error);
+  //     }
+  //   };
+
+  //   fetchAllData();
+  // }, []);
+
+  // function updateStateFromSnapshot(data, key, setStateFunction, newValues) {
+  //   if (data[key]) {
+  //     console.log(`data.${key}: ` + data[key]);
+  //     let ch = 0;
+  //     for (let i = 0; i < data[key].length; i++) {
+  //       if (data[key][i] !== 0) {
+  //         ch = 1;
+  //         break;
+  //       }
+  //     }
+  //     if (ch == 1) {
+  //       const updatedValues = newValues.map(
+  //         (value, index) => value + (data[key][index] || 0)
+  //       );
+  //       setStateFunction(updatedValues);
+  //     } else {
+  //       console.log(`No data found for ${key}, initializing.`);
+  //       setStateFunction([...newValues]); // 새 값으로 초기화
+  //     }
+  //   }
+  // }
+
   useEffect(() => {
-    const fetchAllData = async () => {
-      const statisticsCollectionRef = collection(
+    if (!isLoggedIn) return;
+    const fetchData = async () => {
+      const wrongRef = doc(
         firestore,
         'users',
         userEmail,
-        'wrongStatistics'
+        'wrongStatistics',
+        'data'
       );
+
       try {
-        const querySnapshot = await getDocs(statisticsCollectionRef);
-        querySnapshot.forEach((docSnap) => {
-          if (docSnap.exists()) {
-            console.log(docSnap.id);
-            const data = docSnap.data();
-            console.log(data);
-            const key =
-              'wrong' +
-              docSnap.id.charAt(0).toUpperCase() +
-              docSnap.id.slice(1);
-            // key를 기반으로 적절한 상태 업데이트 함수와 새로운 값들을 설정합니다.
+        const docSnap = await getDoc(wrongRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          console.log(data);
+
+          // 각 key에 대해 상태 업데이트 함수와 새로운 값들을 설정하고 업데이트를 실행합니다.
+          const keys = ['era', 'type']; // 필요에 따라 다른 key들을 추가할 수 있습니다.
+          keys.forEach((key) => {
             let setStateFunction, newValues;
-            if (key === 'wrongEra') {
+            if (key === 'era') {
               setStateFunction = setOriginWrongEras;
               newValues = new Array(9).fill(0);
-            } else if (key === 'wrongType') {
+            } else if (key === 'type') {
               setStateFunction = setOriginWrongTypes;
               newValues = new Array(11).fill(0);
             }
 
-            // 상태 업데이트 함수와 새로운 값들이 정의된 경우에만 업데이트를 실행합니다.
-            updateStateFromSnapshot(data, key, setStateFunction, newValues);
-          } else {
-            console.log(
-              `No document found for ${docSnap.id}, creating a new one.`
-            );
-            // 새 문서 생성 로직을 여기에 추가할 수 있습니다.
-          }
-        });
+            if (setStateFunction && newValues) {
+              updateStateFromSnapshot(data, key, setStateFunction, newValues);
+            }
+          });
+        } else {
+          console.log('No such document!');
+          fetchData();
+        }
       } catch (error) {
-        console.error('Error fetching statistics data: ', error);
+        console.error('Error fetching document: ', error);
       }
     };
 
-    fetchAllData();
-  }, []);
+    fetchData();
+  }, [isLoggedIn]);
 
   function updateStateFromSnapshot(data, key, setStateFunction, newValues) {
-    console.log('tset1');
     if (data[key]) {
-      console.log('tset2');
       console.log(`data.${key}: ` + data[key]);
       let ch = 0;
       for (let i = 0; i < data[key].length; i++) {
@@ -306,7 +373,15 @@ const PracticeResult = ({ route, navigation }) => {
 
   // db 반영
   useEffect(() => {
+    if (!isLoggedIn) return;
     // save path
+    const wrongRef = doc(
+      firestore,
+      'users',
+      userEmail,
+      'wrongStatistics',
+      'data'
+    );
     const wrongEraRef = doc(
       firestore,
       'users',
@@ -323,19 +398,23 @@ const PracticeResult = ({ route, navigation }) => {
     );
     const wrongStatisticsSave = async () => {
       try {
-        await setDoc(wrongEraRef, {
-          wrongEra: saveWrongEras,
+        await updateDoc(wrongRef, {
+          era: saveWrongEras,
+          type: saveWrongTypes,
         });
-        await setDoc(wrongTypeRef, {
-          wrongType: saveWrongTypes,
-        });
+        // await setDoc(wrongEraRef, {
+        //   era: saveWrongEras,
+        // });
+        // await setDoc(wrongTypeRef, {
+        //   type: saveWrongTypes,
+        // });
         console.log('Data updated successfully.');
       } catch (error) {
         console.error('Data could not be saved.' + error);
       }
     };
     wrongStatisticsSave();
-  }, [saveWrongEras, saveWrongTypes]);
+  }, [isLoggedIn, saveWrongEras, saveWrongTypes]);
 
   // 새 오답 분류 데이터 생성 후 상태변수에 반영
   // useEffect(() => {
