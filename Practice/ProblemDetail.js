@@ -105,7 +105,9 @@ const ProblemDetail = ({ route, navigation }) => {
 
   const id = String(problems[currentIndex]?.id);
   const formattedId = `${id.slice(0, 2)}회차 ${parseInt(id.slice(2))}번`;
-  LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
+  LogBox.ignoreLogs([
+    'Non-serializable values were found in the navigation state',
+  ]); // 경고창 안뜨게 하기
 
   useEffect(() => {
     if (userEmail) {
@@ -139,7 +141,7 @@ const ProblemDetail = ({ route, navigation }) => {
           initialChoices[problem.id] = 1;
         });
         setUserChoices(initialChoices);
-        setIsLoading(false);
+        setIsLoading(false);        
       } catch (err) {
         console.error('Error fetching data: ', err);
         setIsLoading(false);

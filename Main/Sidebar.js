@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
-import { Text, View, Alert, Platform, TouchableOpacity } from 'react-native';
+import { Text, View, Alert, Platform, TouchableOpacity, LogBox } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import {
@@ -29,6 +29,10 @@ import DictionaryStack from '../Problem/Dictionary';
 
 import HistoryTalesScreen from '../HistoryVideo/HistoryTalesScreen';
 import LikedVideosScreen from '../HistoryVideo/LikedVideosScreen';
+
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
 const handleRefresh = () => {
   window.location.reload(); // 화면 새로고침

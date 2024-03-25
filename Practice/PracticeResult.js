@@ -284,6 +284,7 @@ const PracticeResult = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!isLoggedIn) return;
+    
     const fetchData = async () => {
       const wrongRef = doc(
         firestore,
@@ -352,23 +353,29 @@ const PracticeResult = ({ route, navigation }) => {
   useEffect(() => {
     console.log('originWrongEras: ' + originWrongEras);
     console.log('newWrongEras: ' + newWrongEras);
-
+    let check = 0;
     const arr = new Array(9).fill(0);
     for (let i = 0; i < newWrongEras.length; i++) {
       arr[i] = newWrongEras[i] + originWrongEras[i];
+      if(newWrongEras[i] !== 0 || originWrongEras[i] !== 0){
+        check = 1;
+      }
     }
-    setSaveWrongEras(arr);
+    if(check === 1) setSaveWrongEras(arr);
   }, [newWrongEras, originWrongEras]);
 
   useEffect(() => {
     console.log('originWrongTypes: ' + originWrongTypes);
     console.log('newWrongTypes: ' + newWrongTypes);
-
+    let check = 0;
     const arr = new Array(11).fill(0);
     for (let i = 0; i < newWrongTypes.length; i++) {
       arr[i] = newWrongTypes[i] + originWrongTypes[i];
+      if(newWrongTypes[i] !== 0 || originWrongTypes[i] !== 0){
+        check = 1;
+      }
     }
-    setSaveWrongTypes(arr);
+    if(check === 1) setSaveWrongTypes(arr);
   }, [newWrongTypes, originWrongTypes]);
 
   // db 반영
@@ -398,6 +405,9 @@ const PracticeResult = ({ route, navigation }) => {
     );
     const wrongStatisticsSave = async () => {
       try {
+
+        console.log('saveWrongEras: ' + saveWrongEras);
+        console.log('saveWrongTypes: ' + saveWrongTypes);
         await updateDoc(wrongRef, {
           era: saveWrongEras,
           type: saveWrongTypes,

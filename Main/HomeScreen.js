@@ -7,12 +7,17 @@ import {
   Image,
   StyleSheet,
   Linking,
+  LogBox,
 } from 'react-native'; // StyleSheet import 추가
 import { useSelector, useDispatch } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native';
 import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
 import { ScrollRestoration } from 'react-router-dom';
+
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
 const Achievement = 52;
 const currentDate = new Date();

@@ -88,6 +88,9 @@ const screens = [
 ];
 
 LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
 const App = () => {
   const isWeb = useSelector((state) => state.isWeb);
