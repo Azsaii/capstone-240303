@@ -284,15 +284,9 @@ const PracticeResult = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    
+
     const fetchData = async () => {
-      const wrongRef = doc(
-        firestore,
-        'users',
-        userEmail,
-        'wrongStatistics',
-        'data'
-      );
+      const wrongRef = doc(firestore, 'users', userEmail);
 
       try {
         const docSnap = await getDoc(wrongRef);
@@ -357,11 +351,11 @@ const PracticeResult = ({ route, navigation }) => {
     const arr = new Array(9).fill(0);
     for (let i = 0; i < newWrongEras.length; i++) {
       arr[i] = newWrongEras[i] + originWrongEras[i];
-      if(newWrongEras[i] !== 0 || originWrongEras[i] !== 0){
+      if (newWrongEras[i] !== 0 || originWrongEras[i] !== 0) {
         check = 1;
       }
     }
-    if(check === 1) setSaveWrongEras(arr);
+    if (check === 1) setSaveWrongEras(arr);
   }, [newWrongEras, originWrongEras]);
 
   useEffect(() => {
@@ -371,24 +365,18 @@ const PracticeResult = ({ route, navigation }) => {
     const arr = new Array(11).fill(0);
     for (let i = 0; i < newWrongTypes.length; i++) {
       arr[i] = newWrongTypes[i] + originWrongTypes[i];
-      if(newWrongTypes[i] !== 0 || originWrongTypes[i] !== 0){
+      if (newWrongTypes[i] !== 0 || originWrongTypes[i] !== 0) {
         check = 1;
       }
     }
-    if(check === 1) setSaveWrongTypes(arr);
+    if (check === 1) setSaveWrongTypes(arr);
   }, [newWrongTypes, originWrongTypes]);
 
   // db 반영
   useEffect(() => {
     if (!isLoggedIn) return;
     // save path
-    const wrongRef = doc(
-      firestore,
-      'users',
-      userEmail,
-      'wrongStatistics',
-      'data'
-    );
+    const wrongRef = doc(firestore, 'users', userEmail);
     const wrongEraRef = doc(
       firestore,
       'users',
@@ -405,12 +393,12 @@ const PracticeResult = ({ route, navigation }) => {
     );
     const wrongStatisticsSave = async () => {
       try {
-
         console.log('saveWrongEras: ' + saveWrongEras);
         console.log('saveWrongTypes: ' + saveWrongTypes);
         await updateDoc(wrongRef, {
           era: saveWrongEras,
           type: saveWrongTypes,
+          name: 'test',
         });
         // await setDoc(wrongEraRef, {
         //   era: saveWrongEras,
