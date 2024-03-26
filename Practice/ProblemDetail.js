@@ -9,7 +9,13 @@ import {
   Alert,
   LogBox,
 } from 'react-native';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { FontAwesome } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
 import { useSelector } from 'react-redux';
@@ -141,7 +147,7 @@ const ProblemDetail = ({ route, navigation }) => {
           initialChoices[problem.id] = 1;
         });
         setUserChoices(initialChoices);
-        setIsLoading(false);        
+        setIsLoading(false);
       } catch (err) {
         console.error('Error fetching data: ', err);
         setIsLoading(false);
@@ -158,6 +164,23 @@ const ProblemDetail = ({ route, navigation }) => {
     const bookMarkRef = collection(firestore, 'users', userEmail, 'bookMark');
     try {
       const querySnapshot = await getDocs(bookMarkRef);
+
+      // 기존 회차의 북마크 정보 삭제
+      const batch = writeBatch(firestore);
+      querySnapshot.forEach((item) => {
+        if (item.id.substring(0, 2) === examDoc.id) {
+          const docRef = doc(
+            firestore,
+            'users',
+            userEmail,
+            'bookMark',
+            item.id
+          );
+          batch.delete(docRef);
+        }
+      });
+      await batch.commit(); // Batch 작업 실행으로 모든 문서 일괄 삭제
+      console.log('All existing bookmarks deleted.');
 
       // 6101, 6103, 6201, 6335, ... 등 북마크 중 회차에 맞는 id만 필터링
       const filteredIds = [];

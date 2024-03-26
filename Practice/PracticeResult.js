@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,11 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  onSnapshot,
   collection,
   getDocs,
+  writeBatch,
 } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
-import { set } from '@firebase/database';
 
 const styles = StyleSheet.create({
   container: {
@@ -114,7 +113,7 @@ const PracticeResult = ({ route, navigation }) => {
   const [saveWrongEras, setSaveWrongEras] = useState(new Array(9).fill(-1)); // 저장용 시대 데이터
   const [saveWrongTypes, setSaveWrongTypes] = useState(new Array(11).fill(-1)); // 저장용 시대 데이터
 
-  const [wrongIndexes, setWrongIndexes] = useState(new Array(50).fill(1)); // 오답 인덱스
+  const [wrongIndexes, setWrongIndexes] = useState(new Array(50).fill(-1)); // 오답 인덱스
   const [totalScore, setTotalScrore] = useState(100);
 
   //let newWrongTypes = initialState.wrongTypes;
@@ -175,7 +174,6 @@ const PracticeResult = ({ route, navigation }) => {
 
   // 새 오답 분류 정보 저장
   useEffect(() => {
-    if (!isLoggedIn) return;
     const updatedWrongEras = [...newWrongEras];
     const updatedWrongTypes = [...newWrongTypes];
     let saveWrongIndexes = new Array(50).fill(1);
@@ -206,12 +204,72 @@ const PracticeResult = ({ route, navigation }) => {
         }
       }
     });
-
-    setNewWrongEras(updatedWrongEras);
-    setNewWrongTypes(updatedWrongTypes);
+    if (isLoggedIn) {
+      setNewWrongEras(updatedWrongEras);
+      setNewWrongTypes(updatedWrongTypes);
+    }
     setWrongIndexes(saveWrongIndexes);
     setTotalScrore(score);
   }, [isLoggedIn]);
+
+  // 오답 업데이트
+  useEffect(() => {
+    if (!isLoggedIn || wrongIndexes[0] === -1) return;
+    const newIds = [];
+    const wrongRef = collection(firestore, 'users', userEmail, 'wrongProblems');
+    // 오답문제 번호 가져오기
+    const updateWrongProblems = async () => {
+      try {
+        const querySnapshot = await getDocs(wrongRef);
+
+        // 기존 오답 정보 삭제
+        const batch = writeBatch(firestore);
+        querySnapshot.forEach((item) => {
+          if (item.id.substring(0, 2) === examId) {
+            const docRef = doc(
+              firestore,
+              'users',
+              userEmail,
+              'wrongProblems',
+              item.id
+            );
+            batch.delete(docRef); // 기존 현재 회차의 오답 정보만 삭제
+          }
+        });
+        await batch.commit(); // Batch 작업 실행으로 모든 문서 일괄 삭제
+        console.log('All existing wrong ploblems deleted.');
+
+        // 현재 오답 인덱스에 회차정보를 더해서 저장 예) 0 -> 6101, 1 -> 6102, ...
+        for (let i = 0; i < 50; i++) {
+          if (wrongIndexes[i] === 0) newIds.push(examId * 100 + i + 1);
+        }
+
+        try {
+          newIds.forEach(async (item) => {
+            const itemRef = doc(
+              firestore,
+              'users',
+              userEmail,
+              'wrongProblems',
+              item.toString()
+            );
+            // 문서를 빈 상태로 저장
+            await setDoc(itemRef, {});
+          });
+
+          console.log('All items saved successfully.');
+        } catch (error) {
+          console.error('Data could not be saved. ' + error);
+        }
+
+        console.log('Wrong ploblems updated.');
+      } catch (error) {
+        console.error('Error updating wrong ploblems: ', error);
+      }
+    };
+
+    updateWrongProblems();
+  }, [wrongIndexes]);
 
   // 기존 데이터 가져온 후 상태변수에 저장
   useEffect(() => {
@@ -250,7 +308,7 @@ const PracticeResult = ({ route, navigation }) => {
           });
           if (check === 0) {
             // 기존 데이터가 없는 경우 기존 데이터를 0으로만 구성된 배열로 초기화
-            console.log(`Data initializing.`);
+            console.log('Data initializing.');
             setOriginWrongEras(new Array(9).fill(0));
             setOriginWrongTypes(new Array(11).fill(0));
           }
