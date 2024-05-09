@@ -7,6 +7,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { DictionaryExplain } from './DictionaryExplain';
+import { ScrollView } from 'react-native-gesture-handler';
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
@@ -20,76 +21,114 @@ function DictionaryStack() {
 }
 
 function DictionaryTab() {
+  const [itemsCharacter, setItemsCharacter] = useState({});
+  const [itemsAgency, setItemsAgency] = useState({});
+  const [itemsIncident, setItemsIncident] = useState({});
+
   return (
     <Tab.Navigator initialRouteName="인물">
       <Tab.Screen
         name="인물"
-        component={() => <DictionaryScreen type={'character'} />}
+        children={() => (
+          <DictionaryScreen
+            type="character"
+            items={itemsCharacter}
+            setItems={setItemsCharacter}
+          />
+        )}
       />
       <Tab.Screen
-        name="기관"
-        component={() => <DictionaryScreen type={'agency'} />}
+        name="단체"
+        children={() => (
+          <DictionaryScreen
+            type="agency"
+            items={itemsAgency}
+            setItems={setItemsAgency}
+          />
+        )}
+      />
+      <Tab.Screen
+        name="사건"
+        children={() => (
+          <DictionaryScreen
+            type="incident"
+            items={itemsIncident}
+            setItems={setItemsIncident}
+          />
+        )}
       />
     </Tab.Navigator>
   );
 }
 
-function DictionaryScreen({ type }) {
+function DictionaryScreen({ type, items, setItems }) {
   const [expanded, setExpanded] = React.useState(true);
-  const [itemsA, setItemsA] = useState([]);
-  const [itemsB, setItemsB] = useState([]);
-  const [itemsC, setItemsC] = useState([]);
+  const eras = [
+    '전삼국',
+    '삼국',
+    '남북국',
+    '후삼국',
+    '고려',
+    '조선',
+    '개항기',
+    '일제강점기',
+    '해방이후',
+  ]; // 예시 시대 목록
   const navigation = useNavigation();
   const handlePress = () => setExpanded(!expanded);
-  const fetchData = async (era, setItems) => {
+  const fetchData = async () => {
     try {
-      const querySnapshot = await getDocs(
-        collection(firestore, 'dictionary', type, era)
-      );
-      const fetchedItems = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setItems(fetchedItems);
-      console.log('Fetched items:', fetchedItems);
+      const newItems = {};
+      for (const era of eras) {
+        const querySnapshot = await getDocs(
+          collection(firestore, 'dictionary', type, era)
+        );
+        const fetchedItems = querySnapshot.docs.map((doc) => ({
+          name: doc.id,
+          ...doc.data(),
+        }));
+        newItems[era] = fetchedItems;
+      }
+      console.log('aaa');
+      setItems(newItems);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
   useEffect(() => {
-    fetchData('고려', setItemsA);
-    fetchData('조선', setItemsB);
+    fetchData();
   }, []);
 
   return (
-    <List.Section>
-      <List.Accordion
-        title="고려시대"
-        left={(props) => <List.Icon {...props} icon="folder" />}
-      >
-        {itemsA.map((item, index) => (
-          <List.Item
-            key={index}
-            title={item.id}
-            onPress={() => navigation.navigate('Explain', { word: item })}
-          />
-        ))}
-      </List.Accordion>
-      <List.Accordion
-        title="조선시대"
-        left={(props) => <List.Icon {...props} icon="folder" />}
-        onPress={handlePress}
-      >
-        {itemsB.map((item, index) => (
-          <List.Item
-            key={index}
-            title={item.id}
-            onPress={() => navigation.navigate('Explain', { word: item })}
-          />
-        ))}
-      </List.Accordion>
-    </List.Section>
+    <View>
+      <ScrollView>
+        <List.Section>
+          {eras.map(
+            (era) =>
+              items[era] && (
+                <List.Accordion
+                  title={era}
+                  left={(props) => <List.Icon {...props} icon="folder" />}
+                >
+                  {items[era].map((item, index) => (
+                    <List.Item
+                      key={index}
+                      title={item.name}
+                      onPress={() =>
+                        navigation.navigate('Explain', {
+                          word: item,
+                          eid: item.eid,
+                        })
+                      }
+                    />
+                  ))}
+                </List.Accordion>
+              )
+          )}
+        </List.Section>
+      </ScrollView>
+    </View>
   );
 }
 
