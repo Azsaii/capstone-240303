@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import {
   View,
   Text,
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   moveButton: {
     padding: 10,
-    backgroundColor: '#ddd',
+    backgroundColor: '#978ff9',
     borderRadius: 5,
   },
   disabledButton: {
@@ -96,6 +96,8 @@ const RecommendationQuestion = () => {
   const [answerShown, setAnswerShown] = useState([]); // 정답 보임 여부
   const [isLoading, setIsLoading] = useState(false); // 로딩 여부
   const userEmail = useSelector((state) => state.userEmail); // 유저 이메일
+
+  const scrollViewRef = useRef(); // 화면 최상단으로 이동시키기 위한 변수
 
   // 배열 섞는 함수
   function shuffleArray(array) {
@@ -143,9 +145,6 @@ const RecommendationQuestion = () => {
     }
 
     console.log('t1');
-    //console.log(tempAllProblems);
-    //aconsole.log(tempAllAnswers);
-
     setAllProblems(tempAllProblems);
     setAllAnswers(tempAllAnswers);
   };
@@ -206,6 +205,7 @@ const RecommendationQuestion = () => {
 
   // 현재 인덱스가 변경되면 해당 인덱스부터 10개 문제를 보이게 한다.
   useEffect(() => {
+    setIsLoading(true);
     console.log('ci: ' + currentIndex);
     if (recommendProblems.length === 0) return;
     //console.log(recommendProblems);
@@ -254,6 +254,7 @@ const RecommendationQuestion = () => {
   // 이전 / 다음 문제 10개 보여주기
   function handlelMove(state) {
     setCurrentIndex(currentIndex + state);
+    scrollViewRef.current.scrollTo({ y: 0, animated: false }); // 화면 최상단으로 스크롤
   }
 
   const renderItem = (item) => {
@@ -313,7 +314,7 @@ const RecommendationQuestion = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} ref={scrollViewRef}>
       {isLoading ? (
         <Spinner />
       ) : (

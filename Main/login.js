@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
+  LogBox
 } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -21,6 +22,8 @@ const Login = ({ navigation, onLogin }) => {
   const handleCreateId = () => {
     navigation.navigate('회원가입');
   };
+
+  LogBox.ignoreLogs(['Warning: ...']);
 
   const handleLogin = async () => {
     const auth = getAuth();

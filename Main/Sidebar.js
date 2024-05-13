@@ -39,6 +39,7 @@ import MapScreen from '../Map/map';
 
 import RecommendationQuestion from '../RecommendationPractice/RecommendationQuestion';
 
+LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
