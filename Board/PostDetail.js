@@ -117,8 +117,9 @@ const PostDetail = ({ route, navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
-  const serverPath = 'http://192.168.0.3:8080/';
-
+  //const serverPath = 'http://192.168.0.3:8080/';
+  const serverPath = 'http://223.194.133.88:8080/';
+  
   // 뒤로가기 시 게시판으로 이동
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
