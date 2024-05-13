@@ -40,11 +40,11 @@ function WrongProblemTab({ route }) {
     <Tab.Navigator initialRouteName="오답문제">
       <Tab.Screen
         name="오답문제"
-        component={() => <WrongProblemScreen userEmail={userEmail} />}
+        children={() => <WrongProblemScreen userEmail={userEmail} />}
       />
       <Tab.Screen
         name="북마크"
-        component={() => <BookMarkScreen userEmail={userEmail} />}
+        children={() => <BookMarkScreen userEmail={userEmail} />}
       />
     </Tab.Navigator>
   );

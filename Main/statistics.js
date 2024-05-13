@@ -1,266 +1,108 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, StyleSheet, Image, Dimensions, Animated, TouchableOpacity, Alert } from 'react-native';
 import { Button, Text } from 'react-native-elements';
-import { Text as RNText } from 'react-native-elements';
-import Svg, { Line, Text as SvgText, Rect } from 'react-native-svg';
+import Svg, { Line, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { useSelector } from 'react-redux';
+import { firestore } from '../firebaseConfig';
+import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 
 const { width } = Dimensions.get('window');
 
-//회차별 점수 그래프
-class LineChart extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      data: [
-        { x: 0, y: 0 },
-        { x: 1, y: 40 },
-        { x: 2, y: 25 },
-        { x: 3, y: 60 },
-        { x: 4, y: 30 },
-      ],
-      maxY: 110, // 최대 Y 값
-      svgHeight: 200,
-      svgWidth: 350,
-      margin: 20, // 그래프와 축 사이의 간격
-    };
-  }
-
-  addDataPoint = () => {
-    // 현재 데이터를 복제하여 새로운 데이터 포인트를 추가
-    const newData = [...this.state.data, { x: this.state.data.length, y: 40 }];
-
-    this.setState({ data: newData });
-  };
-
-  render() {
-    // 데이터 포인트을 선으로 변환 및 데이터 레이블 추가
-    const lines = this.state.data.map((point, index) => (
-      <React.Fragment key={index}>
-        <Line
-          x1={(this.state.svgWidth / (this.state.data.length - 1)) * index}
-          y1={
-            this.state.svgHeight -
-            (point.y / this.state.maxY) * this.state.svgHeight
-          }
-          x2={
-            (this.state.svgWidth / (this.state.data.length - 1)) * (index + 1)
-          }
-          y2={
-            this.state.svgHeight -
-            (this.state.data[index + 1]
-              ? (this.state.data[index + 1].y / this.state.maxY) *
-                this.state.svgHeight
-              : 0)
-          }
-          stroke="blue"
-          strokeWidth="2"
-        />
-
-        <SvgText
-          x={(this.state.svgWidth / (this.state.data.length - 1)) * index - 30}
-          y={
-            this.state.svgHeight -
-            (point.y / this.state.maxY) * this.state.svgHeight
-          }
-          fontSize="12"
-          fill="black"
-        >
-          {`${point.y}점`} {/* 숫자를 문자열로 변환 */}
-        </SvgText>
-
-        <Rect
-          x={(this.state.svgWidth / (this.state.data.length - 1)) * index - 3} // x 좌표 조정
-          y={
-            this.state.svgHeight -
-            (point.y / this.state.maxY) * this.state.svgHeight -
-            4
-          } // y 좌표 조정
-          width="8" // 네모의 가로 길이
-          height="8" // 네모의 세로 길이
-          fill="black" // 채우기 색상
-        />
-      </React.Fragment>
-    ));
-
-    // 가로축을 그림
-    const horizontalAxis = (
-      <Line
-        x1={0}
-        y1={this.state.svgHeight}
-        x2={this.state.svgWidth}
-        y2={this.state.svgHeight}
-        stroke="black"
-        strokeWidth="1"
-      />
-    );
-
-    // 세로축 레이블 및 눈금을 추가
-    const verticalAxis = (
-      <View>
-        <Line
-          x1={0}
-          y1={0}
-          x2={0}
-          y2={this.state.svgHeight}
-          stroke="black"
-          strokeWidth="1"
-        />
-        {[50, 100].map((value, i) => {
-          const yPos =
-            this.state.svgHeight -
-            (this.state.svgHeight / this.state.maxY) * value;
-          return (
-            <React.Fragment key={i}>
-              <Line
-                x1={0}
-                y1={yPos}
-                x2={this.state.svgWidth}
-                y2={yPos}
-                stroke="black"
-                strokeWidth="1"
-                strokeDasharray="4 4" // 점선 설정
-              />
-              <SvgText
-                x={20}
-                y={yPos - 5}
-                fontSize="12"
-                fill="black"
-                textAnchor="end"
-              >
-                {`${value}`}
-              </SvgText>
-            </React.Fragment>
-          );
-        })}
-      </View>
-    );
-
-    return (
-      <View style={[styles.container, { marginTop: this.state.margin }]}>
-        <RNText h4>점수 성장 그래프</RNText>
-        <Text style={styles.subtitle}>
-          회차별 점수를 시간 순으로 보여줍니다.
-        </Text>
-        <Svg
-          height={this.state.svgHeight + this.state.margin}
-          width={this.state.svgWidth - 10}
-        >
-          {lines}
-          {horizontalAxis}
-          {verticalAxis}
-        </Svg>
-        <Button title="Add Data Point" onPress={this.addDataPoint} />
-      </View>
-    );
-  }
-}
+const horizontalAxisLabels = [
+  '전삼국', '삼국', '남북국', '후삼국', '고려', '조선', '개항기', '일제강점기', '해방이후',
+];
+const horizontalAxisLabels2 = [
+  '문화', '유물', '사건', '인물', '장소', '그림', '제도', '기구', '조약', '단체',
+];
 
 //유형별 막대그래프
 const BarChart = ({ data }) => {
-  var barWidth = 30;
+  var barWidth = 40;
   const maxValue = Math.max(...data);
   const chartWidth = data.length * (barWidth + 10);
   const chartHeight = 200;
   const verticalAxisHeight = chartHeight - 20;
 
   // 가로축에 표시할 레이블 배열
-  const horizontalAxisLabels = [
-    '전삼국',
-    '삼국',
-    '남북국',
-    '후삼국',
-    '고려',
-    '조선',
-    '개항기',
-    '일제강점기',
-    '해방이후',
-  ];
-  const horizontalAxisLabels2 = [
-    '문화',
-    '유물',
-    '사건',
-    '인물',
-    '장소',
-    '그림',
-    '제도',
-    '기구',
-    '조약',
-    '단체',
-  ];
+
+
   if (data.length == 9) {
     list = horizontalAxisLabels;
-    barWidth = 30;
-    color = '#3498db';
+    color = '#CD7F32';
   } else {
     list = horizontalAxisLabels2;
-    barWidth = 28;
     color = '#8A2BE2';
   }
 
+  const animatedValues = data.map(() => new Animated.Value(0));
+
+  useEffect(() => {
+    // 모든 막대에 대해 애니메이션을 동시에 실행합니다.
+    const animations = animatedValues.map((animValue, index) => {
+      return Animated.timing(animValue, {
+        toValue: (data[index] / maxValue) * verticalAxisHeight,
+        duration: 1000,
+        useNativeDriver: false,
+      });
+    });
+    Animated.parallel(animations).start();
+  }, [data, animatedValues, maxValue, verticalAxisHeight]);
+
   return (
-    <View>
-      <Svg height={chartHeight} width={chartWidth}>
-        {/* 가로축 */}
-        <Line
-          x1={0}
-          y1={chartHeight}
-          x2={chartWidth}
-          y2={chartHeight}
-          stroke="black"
-          strokeWidth="3"
-        />
-
-        {/* 세로축 */}
-        <Line
-          x1={0}
-          y1={0}
-          x2={0}
-          y2={verticalAxisHeight}
-          stroke="black"
-          strokeWidth="3"
-        />
-
-        {data.map((value, index) => (
-          <React.Fragment key={index}>
-            {/* 막대 그래프 */}
-            <Rect
-              x={index * (barWidth + 10)}
-              y={chartHeight - (value / maxValue) * verticalAxisHeight}
-              width={barWidth}
-              height={(value / maxValue) * verticalAxisHeight}
-              fill={color}
-            />
-
-            {/* 가로축 눈금 */}
-            <SvgText
-              x={index * (barWidth + 10) + barWidth / 2}
-              y={chartHeight - 15}
-              fontSize="12"
-              fill="black"
-              textAnchor="middle"
-            >
-              {list[index]}
-            </SvgText>
-            <SvgText
-              x={index * (barWidth + 10) + barWidth / 2}
-              y={chartHeight - 5}
-              fontSize="12"
-              fill="black"
-              textAnchor="middle"
-            >
-              {data[index]}
-            </SvgText>
-          </React.Fragment>
-        ))}
-      </Svg>
-    </View>
+    <ScrollView horizontal={true} showsHorizontalScrollIndicator={true} style={{ marginTop: 20 }}>
+  <View>
+    <Svg height={chartHeight} width={chartWidth}>
+      <Defs>
+        <LinearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop offset="0%" stopColor="#3498db" stopOpacity="1" />
+          <Stop offset="100%" stopColor="#8A2BE2" stopOpacity="1" />
+        </LinearGradient>
+      </Defs>
+      {/* 가로축 */}
+      <Line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#e0e0e0" strokeWidth="2" />
+      {/* 세로축 */}
+      <Line x1={0} y1={0} x2={0} y2={verticalAxisHeight} stroke="#e0e0e0" strokeWidth="2" />
+      {data.map((value, index) => (
+        <React.Fragment key={index}>
+          {/* 막대 그래프 */}
+          <Rect
+            x={index * (barWidth + 10) + 5}
+            y={chartHeight - (value / maxValue) * verticalAxisHeight}
+            width={barWidth}
+            height={(value / maxValue) * verticalAxisHeight}
+            fill={color}
+            rx="4" // 모서리 둥글게 처리
+          />
+          {/* 레이블 및 값 */}
+          <SvgText
+            x={index * (barWidth + 10) + barWidth / 2 + 5}
+            y={index % 2 === 1 ? chartHeight - 30 : chartHeight - 20}
+            fontSize="14"
+            fill="black"
+            textAnchor="middle"
+          >
+            {list[index]}
+          </SvgText>
+          <SvgText
+            x={index * (barWidth + 10) + barWidth / 2 + 5}
+            y={chartHeight - 6}
+            fontSize="12"
+            fill="#ffffff"
+            textAnchor="middle"
+          >
+            {value}
+          </SvgText>
+        </React.Fragment>
+      ))}
+    </Svg>
+  </View>
+</ScrollView>
   );
 };
 
 //메인 랜더링
 const Statistics = () => {
-  const name = 'woo';
+  const userEmail = useSelector((state) => state.userEmail);
   const TrueCheck = 100;
   const FalseCheck = 5;
   const truePercentage = (TrueCheck / (TrueCheck + FalseCheck)) * 100;
@@ -269,12 +111,60 @@ const Statistics = () => {
   const imageurl =
     'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%ED%86%B5%EA%B3%84%EB%B0%B0%EA%B2%BD%EA%B2%BD.jpg?alt=media&token=0bbb3935-6ca6-4eba-8093-65771dcbb7f0';
   const time = 302;
-  const data1 = [20, 40, 60, 30, 10, 25, 11, 52, 23]; // 막대 그래프에 표시할 데이터
-  const data2 = [11, 23, 33, 12, 32, 42, 23, 11, 6, 12];
-  const handleButtonPress = () => {
-    // 버튼이 눌렸을 때 실행되는 로직 추가
-    console.log('버튼이 눌렸습니다!');
-  };
+
+  const [data1, setData1] = useState([]); // 시대별 풀이 데이터
+  const [data2, setData2] = useState([]); // 유형별 풀이 데이터
+  //지금까지 푼 문제 수
+  const solve = data1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  //틀린 문제 수
+  const [wrongProblemsCount, setWrongProblemsCount] = useState(0);
+
+
+  //최저 공부량 탐색변수
+  const minera = Math.min(...data1);
+  const mincategory = Math.min(...data2);
+  const mineraindex = data1.indexOf(minera);
+  const mincategoryindex = data2.indexOf(mincategory);
+  const studyera = horizontalAxisLabels[mineraindex];
+  const studycategory = horizontalAxisLabels2[mincategoryindex];
+
+  //통계 랜더링마다 파이어베이스에서 통계값을 가져온다.
+  useEffect(() => {
+    const fetchData = async () => {
+      const dataDocRef = doc(firestore, `users/${userEmail}/wrongStatistics/data`);
+
+      try {
+        const docSnap = await getDoc(dataDocRef);
+        if (docSnap.exists()) {
+          const eraData = docSnap.data().era;
+          setData1(eraData);
+
+          // type 배열에서 7번 인덱스(일제강점기 오류) 제외하고 data2 상태에 저장
+          const typeData = docSnap.data().type;
+          const filteredTypeData = typeData.filter((item, index) => index !== 7);
+          setData2(filteredTypeData);
+        } else {
+          console.log('No such document!');
+        }
+
+        const wrongProblemsCollectionRef = collection(firestore, `users/${userEmail}/wrongProblems`);
+        const querySnapshot = await getDocs(wrongProblemsCollectionRef);
+        setWrongProblemsCount(querySnapshot.docs.length); // 문서 개수 업데이트
+
+      } catch (error) {
+        console.error("Error getting document:", error);
+      }
+
+
+
+    };
+
+    if (userEmail) {
+      fetchData();
+    }
+  }, [userEmail]);
+
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -282,29 +172,7 @@ const Statistics = () => {
         <Image source={{ uri: imageurl }} style={styles.image} />
       </View>
 
-      <Text style={styles.title}>{name}님의 학습 통계</Text>
-      <Text style={styles.subtitle}>사용자의 학습 통계를 보여줍니다.</Text>
-
-      <LineChart />
-      <Text style={styles.title}>지금까지 푼 문제 중...</Text>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>
-          지금까지 {TrueCheck + FalseCheck}문제를 풀었어요!!
-        </Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>{TrueCheck} 문제를 맞추고</Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>{FalseCheck} 문제를 틀렸습니다</Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>정답률 {roundedPercentage}%</Text>
-        <Text style={styles.answerText}>총점 {Totalscore}점</Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>시험에 사용한 총 시간 : {time}분</Text>
-      </View>
+      <Text style={styles.title}>{userEmail}님의 학습 통계</Text>
       <View>
         <Text style={styles.title}>시대별 문제풀이 통계</Text>
         <BarChart data={data1} />
@@ -312,8 +180,57 @@ const Statistics = () => {
       <View>
         <Text style={styles.title}>유형별 문제풀이 통계</Text>
         <BarChart data={data2} />
+        <Text style={{ marginTop: 10 }}>
+          <Text style={styles.boldText}>{studyera}</Text>
+          시대와,
+          <Text style={styles.boldText}> {studycategory}</Text>
+          유형의 학습이 부족합니다
+        </Text>
+
+
+        <View style={styles.studybuttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(`"${studyera}" 공부하러 가기 버튼이 눌렸습니다.`); //화면 띄우기 추가
+            }}
+          >
+            <Text style={styles.buttonText}>{`${studyera} 공부하러 가기`}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(
+                `"${studycategory}" 공부하러 가기 버튼이 눌렸습니다.`
+              ); //화면띄우기 추가
+            }}
+          >
+            <Text
+              style={styles.buttonText}
+            >{`${studycategory} 공부하러 가기`}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
+      <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
+      <View style={styles.answerContainer}>
+        <Text style={styles.answerText}>
+          {solve}문제를 풀었습니다
+        </Text>
+      </View>
+      <View style={styles.answerContainer}>
+        <Text style={styles.answerText}>{solve - wrongProblemsCount} 문제를 맞추고</Text>
+      </View>
+      <View style={styles.answerContainer}>
+        <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
+      </View>
+      <View style={styles.answerContainer}>
+        <Text style={styles.answerText}>
+          정답률 {(((solve - wrongProblemsCount) / solve) * 100).toFixed(2)}%
+        </Text>
+        <Text style={styles.answerText}>총점 {Totalscore}점</Text>
+      </View>
       <Button
         title="공부하러가기"
         onPress={() => {
@@ -330,6 +247,25 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 10,
   },
+  studybuttonContainer: {
+    flexDirection: 'row', // 버튼을 가로로 배치
+    justifyContent: 'space-evenly', // 버튼 사이에 공간을 동등하게 배분
+    marginTop: 10, // 상단 여백
+  },
+  button: {
+    backgroundColor: '#008000', // 녹색 배경
+    padding: 10, // 내부 여백
+    borderRadius: 5, // 버튼의 모서리를 둥글게
+  },
+  buttonText: {
+    color: '#FFFFFF', // 흰색 글씨
+    fontSize: 16, // 글씨 크기
+    fontWeight: 'bold', // 글씨 두께
+  },
+  boldText: {
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
   imagecontainer: {
     position: 'absolute',
     flex: 1,
@@ -338,14 +274,18 @@ const styles = StyleSheet.create({
   },
   image: {
     width: width, // 화면의 가로 길이에 맞추기
-    height: 160,
+    height: 100,
     resizeMode: 'cover',
     borderRadius: 10,
   },
   title: {
     fontSize: 30,
     marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 30,
+  },
+  title2: {
+    fontSize: 30,
+    marginTop: 40,
   },
   subtitle: {
     fontSize: 18,
@@ -381,4 +321,22 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Statistics;
+function StatisticsWrapper({ navigation }) {
+  const isLoggedIn = useSelector((state) => state.isLoggedIn);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      // 로그인하지 않았을 때의 로직
+      Alert.alert("알림", "로그인 후 이용해주세요", [
+        {
+          text: "확인",
+          onPress: () => navigation.navigate('HomeScreen'), // 또는 적절한 화면으로 리디렉션
+        },
+      ]);
+    }
+  }, [isLoggedIn, navigation]);
+
+  return isLoggedIn ? <Statistics /> : null;
+}
+
+export default StatisticsWrapper;

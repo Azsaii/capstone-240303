@@ -20,7 +20,6 @@ import {
 
 import SideScreen from './side';
 import Statistics from './statistics';
-import Planner from './planner';
 import Login from './login';
 import CreateId from './createId';
 import HomeScreen from './HomeScreen';
@@ -36,6 +35,7 @@ import DictionaryStack from '../Problem/Dictionary';
 
 import HistoryTalesScreen from '../HistoryVideo/HistoryTalesScreen';
 import LikedVideosScreen from '../HistoryVideo/LikedVideosScreen';
+import MapScreen from '../Map/map';
 
 import RecommendationQuestion from '../RecommendationPractice/RecommendationQuestion';
 
@@ -44,7 +44,6 @@ LogBox.ignoreLogs([
 ]);
 
 const handleRefresh = () => {
-  window.location.reload(); // 화면 새로고침
 };
 
 const Drawer = createDrawerNavigator();
@@ -380,34 +379,6 @@ export default function Sidebar({ navigation }) {
         }
       </Drawer.Screen>
       <Drawer.Screen
-        name="플래너"
-        component={Planner}
-        options={{
-          drawerIcon: ({ focused, size }) => (
-            <MaterialIcons name="timer" size={19} color="black" />
-          ),
-          drawerLabel: ({ focused, color }) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginLeft: -26,
-              }}
-            >
-              <Text
-                style={{
-                  color: focused ? 'blue' : 'black',
-                  fontSize: 16,
-                  marginBottom: 3,
-                }}
-              >
-                플래너
-              </Text>
-            </View>
-          ),
-        }}
-      />
-      <Drawer.Screen
         name="통계"
         component={Statistics}
         options={{
@@ -587,6 +558,34 @@ export default function Sidebar({ navigation }) {
                 }}
               >
                 용어사전
+              </Text>
+            </View>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="사건지도"
+        component={MapScreen}
+        options={{
+          drawerIcon: ({ focused, size }) => (
+            <MaterialIcons name="map" size={19} color="black" />
+          ),
+          drawerLabel: ({ focused, color }) => (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginLeft: -26,
+              }}
+            >
+              <Text
+                style={{
+                  color: focused ? 'blue' : 'black',
+                  fontSize: 16,
+                  marginBottom: 3,
+                }}
+              >
+                사건지도
               </Text>
             </View>
           ),
