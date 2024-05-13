@@ -60,7 +60,7 @@ const BoardScreenUI = ({ navigation, boardName }) => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://192.168.0.3:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
+  const serverPath = 'http://192.168.0.5:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
   //const serverPath = 'http://223.194.133.88:8080/';
 
   LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기

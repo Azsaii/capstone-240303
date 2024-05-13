@@ -8,7 +8,6 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import Markdown from 'react-native-markdown-display';
 import RenderHtml from 'react-native-render-html';
 const { width } = Dimensions.get('window'); // 전체 디바이스 화면의 너비를 가져옵니다
 
