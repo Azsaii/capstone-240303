@@ -29,6 +29,9 @@ import ProblemCommentary from './Practice/ProblemCommentary';
 import QuizGame from './Game/QuizGame';
 import UnsolvedScreen from './Game/UnsolvedScreen';
 
+// 추천 문제
+import RecommendationQuestion from './RecommendationPractice/RecommendationQuestion';
+
 // 네비게이터
 const Stack = createStackNavigator();
 const screens = [
@@ -83,6 +86,11 @@ const screens = [
   {
     name: 'UnsolvedScreen',
     component: UnsolvedScreen,
+    options: { headerShown: false },
+  },
+  {
+    name: 'RecommendationQuestion',
+    component: RecommendationQuestion,
     options: { headerShown: false },
   },
 ];

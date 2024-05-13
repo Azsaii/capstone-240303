@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
-import { Text, View, Alert, Platform, TouchableOpacity, LogBox } from 'react-native';
+import {
+  Text,
+  View,
+  Alert,
+  Platform,
+  TouchableOpacity,
+  LogBox,
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import {
@@ -29,6 +36,8 @@ import DictionaryStack from '../Problem/Dictionary';
 
 import HistoryTalesScreen from '../HistoryVideo/HistoryTalesScreen';
 import LikedVideosScreen from '../HistoryVideo/LikedVideosScreen';
+
+import RecommendationQuestion from '../RecommendationPractice/RecommendationQuestion';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -301,10 +310,45 @@ export default function Sidebar({ navigation }) {
         }}
       />
       <Drawer.Screen
+        name="추천문제"
+        options={{
+          drawerIcon: ({ focused, size }) => (
+            <MaterialIcons name="recommend" size={19} color="black" />
+          ),
+          drawerLabel: ({ focused, color }) => (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginLeft: -26,
+              }}
+            >
+              <Text
+                style={{
+                  color: focused ? 'blue' : 'black',
+                  fontSize: 16,
+                  marginBottom: 3,
+                }}
+              >
+                추천문제
+              </Text>
+            </View>
+          ),
+        }}
+      >
+        {(props) =>
+          isLoggedIn ? (
+            <RecommendationQuestion />
+          ) : (
+            <Login {...props} onLogin={handleLogin} />
+          )
+        }
+      </Drawer.Screen>
+      <Drawer.Screen
         name="오답노트"
         options={{
           drawerIcon: ({ focused, size }) => (
-            <MaterialIcons name="menu-book" size={19} color="black" />
+            <MaterialIcons name="book" size={19} color="black" />
           ),
           drawerLabel: ({ focused, color }) => (
             <View
@@ -386,38 +430,6 @@ export default function Sidebar({ navigation }) {
                 }}
               >
                 통계
-              </Text>
-            </View>
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="채점하기"
-        component={SideScreen}
-        options={{
-          drawerIcon: ({ focused, size }) => (
-            <MaterialIcons
-              name="check-circle-outline"
-              size={19}
-              color="black"
-            />
-          ),
-          drawerLabel: ({ focused, color }) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginLeft: -26,
-              }}
-            >
-              <Text
-                style={{
-                  color: focused ? 'blue' : 'black',
-                  fontSize: 16,
-                  marginBottom: 3,
-                }}
-              >
-                채점하기
               </Text>
             </View>
           ),
@@ -557,7 +569,7 @@ export default function Sidebar({ navigation }) {
         component={DictionaryStack}
         options={{
           drawerIcon: ({ focused, size }) => (
-            <MaterialIcons name="videogame-asset" size={19} color="black" />
+            <MaterialIcons name="menu-book" size={19} color="black" />
           ),
           drawerLabel: ({ focused, color }) => (
             <View
