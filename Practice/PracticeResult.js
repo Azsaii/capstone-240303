@@ -99,8 +99,6 @@ const PracticeResult = ({ route, navigation }) => {
   const { userChoices, problems, answers, examId } = route.params; // 선택 답안
   const choicesArray = Object.entries(userChoices);
   const [showOnlyWrong, setShowOnlyWrong] = useState(false); // 오답만 보기 여부
-  const [prevWrongTypes, setPrevWrongTypes] = useState([]);
-  const initialState = { wrongTypes: Array(9).fill(0), saveNeeded: false };
 
   const [originWrongEras, setOriginWrongEras] = useState(new Array(9).fill(-1)); // 기존 오답들 시대 데이터
   const [originWrongTypes, setOriginWrongTypes] = useState(

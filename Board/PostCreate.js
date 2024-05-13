@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 });
 // 게시판 글 생성 화면
 const PostCreate = ({ route, navigation }) => {
-  const { boardName, post, commentList } = route.params;
+  const { boardName, post } = route.params;
   const [title, setTitle] = useState(post ? post.title : '');
   const [body, setBody] = useState(post ? post.body : '');
   const [userName, setUserName] = useState();

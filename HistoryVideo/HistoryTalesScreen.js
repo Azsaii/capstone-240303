@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import {Modal, Text, View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Pressable, ScrollView, TouchableWithoutFeedback } from 'react-native';
+import { Text, View, StyleSheet, FlatList, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { SelectList, MultipleSelectList } from 'react-native-dropdown-select-list';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
-import { doc, getDoc, collection, deleteDoc, addDoc, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, deleteDoc, addDoc, getDocs, updateDoc, orderBy, query } from 'firebase/firestore';
 import { Button, Card, TextInput, List, IconButton, MD3Colors, Divider, Icon } from 'react-native-paper';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 
@@ -193,12 +193,13 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
             const data = document.data();
     
             if (data.videoId === video.videoId) {
-                const commentsSnapshot = await getDocs(collection(firestore, `Videos/${document.id}/comments`));
+                const commentsSnapshot = await getDocs(query(collection(firestore, `Videos/${document.id}/comments`), orderBy("created", "desc")));
                 commentsSnapshot.forEach(doc => {
                     commentsArray.push({
                         docId: doc.id,
                         comment: doc.data().comment,
-                        userEmail: doc.data().userEmail
+                        userEmail: doc.data().userEmail,
+                        created: doc.data().created // 날짜 필드도 포함
                     });
                 });
             }
@@ -217,7 +218,8 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                 try {
                     await addDoc(collection(firestore, `Videos/${document.id}/comments`), {
                         comment: comment,
-                        userEmail: userEmail
+                        userEmail: userEmail,
+                        created: new Date()
                     });
                     const comments = await fetchComments(selectedVideo);
                     setComments(comments);
@@ -362,7 +364,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                         <List.Item
                                             title={comment.comment}
-                                            description={comment.userEmail}
+                                            description={`${comment.userEmail}\n${new Date(comment.created.seconds * 1000).toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'})}`}
                                             left={(props) => <List.Icon {...props} icon="comment" />}
                                         />
                                         {comment.userEmail === userEmail && (
