@@ -34,10 +34,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textAlign: 'center',
   },
-  image: {
-    // width: '100%',
-    // minHeight: 460,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -110,7 +106,7 @@ const ProblemDetail = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
   const isWeb = useSelector((state) => state.isWeb); // 웹 앱 구분
 
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 }); // 동적 이미지 크기변화를 위한 변수
 
   const id = String(problems[currentIndex]?.id);
   const formattedId = `${id.slice(0, 2)}회차 ${parseInt(id.slice(2))}번`;
@@ -356,20 +352,25 @@ const ProblemDetail = ({ route, navigation }) => {
           </View>
           <View style={styles.line} />
           {problems.length > 0 && (
-            <ScrollView>
-              {problems[currentIndex].data.img && (
-                <Image
-                  style={{ width: '100%', height: imageSize.height }}
-                  source={{ uri: problems[currentIndex].data.img }}
-                  resizeMode="contain"
-                  onLoad={(event) => {
-                    const { width, height } = event.nativeEvent.source;
-                    const screenWidth = Dimensions.get('window').width;
-                    const scaledHeight = (height / width) * screenWidth;
-                    setImageSize({ width: screenWidth, height: scaledHeight });
-                  }}
-                />
-              )}
+            <>
+              <ScrollView>
+                {problems[currentIndex].data.img && (
+                  <Image
+                    style={{ width: '100%', height: imageSize.height }}
+                    source={{ uri: problems[currentIndex].data.img }}
+                    resizeMode="contain"
+                    onLoad={(event) => {
+                      const { width, height } = event.nativeEvent.source;
+                      const screenWidth = Dimensions.get('window').width;
+                      const scaledHeight = (height / width) * screenWidth;
+                      setImageSize({
+                        width: screenWidth,
+                        height: scaledHeight,
+                      });
+                    }}
+                  />
+                )}
+              </ScrollView>
               <View style={styles.buttonContainer}>
                 {[1, 2, 3, 4, 5].map((number) => (
                   <TouchableOpacity
@@ -385,7 +386,7 @@ const ProblemDetail = ({ route, navigation }) => {
                   </TouchableOpacity>
                 ))}
               </View>
-            </ScrollView>
+            </>
           )}
           <View style={styles.controlButtonContainer}>
             <TouchableOpacity

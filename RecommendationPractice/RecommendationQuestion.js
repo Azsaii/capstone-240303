@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef  } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  BackHandler,
-  LogBox,
+  Dimensions,
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
@@ -98,6 +97,7 @@ const RecommendationQuestion = () => {
   const userEmail = useSelector((state) => state.userEmail); // 유저 이메일
 
   const scrollViewRef = useRef(); // 화면 최상단으로 이동시키기 위한 변수
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 }); // 동적 이미지 크기변화를 위한 변수
 
   // 배열 섞는 함수
   function shuffleArray(array) {
@@ -287,27 +287,20 @@ const RecommendationQuestion = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            Alert.alert(
-              '문제',
-              '',
-              [
-                {
-                  text: '닫기',
-                  onPress: () => console.log('닫기 버튼이 눌렸습니다.'),
-                },
-              ],
-              { cancelable: true }
-            );
-          }}
-        >
+        <ScrollView>
           <Image
-            style={styles.problemImage}
+            style={{ width: '100%', height: imageSize.height }}
             source={{ uri: item.img }}
             resizeMode="contain"
+            onLoad={(event) => {
+              const { width, height } = event.nativeEvent.source;
+              const screenWidth = Dimensions.get('window').width;
+              const scaledHeight = (height / width) * screenWidth;
+              setImageSize({ width: screenWidth, height: scaledHeight });
+            }}
           />
-        </TouchableOpacity>
+        </ScrollView>
+
         <View style={styles.line}></View>
       </View>
     );
