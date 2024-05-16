@@ -8,15 +8,21 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import { FontAwesome, Feather } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import Modal from 'react-native-modal';
 import BasicProblem from './BasicProblem';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
-//const app = initializeApp(firebaseConfig);
-//const db = getFirestore(app);
 
 function WrongProblem({ userEmail }) {
   return (
@@ -40,23 +46,44 @@ function WrongProblemTab({ route }) {
     <Tab.Navigator initialRouteName="오답문제">
       <Tab.Screen
         name="오답문제"
-        children={() => <WrongProblemScreen userEmail={userEmail} />}
+        children={() => (
+          <RedoProblemScreen
+            userEmail={userEmail}
+            collectionName={'wrongProblems'}
+          />
+        )}
       />
       <Tab.Screen
         name="북마크"
-        children={() => <BookMarkScreen userEmail={userEmail} />}
+        children={() => (
+          <RedoProblemScreen
+            userEmail={userEmail}
+            collectionName={'bookMark'}
+          />
+        )}
       />
     </Tab.Navigator>
   );
 }
 
-function WrongProblemScreen({ userEmail }) {
+function RedoProblemScreen({ userEmail, collectionName }) {
   const [data, setData] = useState([]);
   const navigation = useNavigation();
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const isFocused = useIsFocused();
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [clickedProblem, setClickedProblem] = useState(null);
+  const openModal = (id) => {
+    setClickedProblem(id);
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+  };
   useEffect(() => {
     const fetchData = async () => {
       const querySnapshot = await getDocs(
-        collection(firestore, 'users', userEmail, 'WrongProblem')
+        collection(firestore, 'users', userEmail, collectionName)
       );
       const fetchedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -66,29 +93,100 @@ function WrongProblemScreen({ userEmail }) {
     };
 
     fetchData();
-  }, []);
+  }, [isFocused]);
+
+  const handleDelete = async () => {
+    closeModal();
+    await deleteDoc(
+      doc(firestore, 'users', userEmail, collectionName, clickedProblem)
+    );
+    setData(data.filter((i) => i.id !== clickedProblem));
+  };
+
+  const toggleDeleteButton = () => {
+    setShowDeleteButton((prev) => !prev);
+  };
 
   const renderItem = ({ item }) => {
     const handlePress = () => {
-      navigation.navigate('BasicProblem', { problemId: item.id });
+      navigation.navigate('BasicProblem', { problemId: item.id, userEmail });
     };
 
     return (
       <View style={styles.cell}>
-        <TouchableOpacity onPress={handlePress}>
-          <Text style={styles.name}>{item.id}</Text>
-        </TouchableOpacity>
+        {!showDeleteButton && (
+          <TouchableOpacity onPress={handlePress}>
+            <Text style={styles.name}>{item.id}</Text>
+          </TouchableOpacity>
+        )}
+        {showDeleteButton && (
+          <TouchableOpacity
+            onPress={() => openModal(item.id)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text style={styles.name}>{item.id} </Text>
+            <Feather name="x-square" size={24} color="red" />
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
   return (
     <View style={styles.container}>
+      <View style={{ alignItems: 'flex-end' }}>
+        <TouchableOpacity onPress={toggleDeleteButton}>
+          <FontAwesome name="trash" size={36} color="white" />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => String(item.id)}
       />
+      <ItemDeleteModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        problemId={clickedProblem}
+        handleDelete={handleDelete}
+      />
     </View>
+  );
+}
+
+function ItemDeleteModal({ isOpen, onClose, problemId, handleDelete }) {
+  return (
+    <Modal
+      isVisible={isOpen}
+      onRequestClose={() => onClose()}
+      onBackdropPress={() => onClose()}
+      style={{ margin: 0 }}
+    >
+      <View style={styles.deleteModalView}>
+        <Text style={{ fontSize: 25 }}>
+          <Text style={{ color: 'red' }}>{problemId}</Text>번 문제를
+          삭제하시겠습니까?
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            width: '100%',
+          }}
+        >
+          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <Text style={{ fontSize: 20, color: 'gray' }}>취소</Text>
+          </TouchableOpacity>
+          <Text>{'  '}</Text>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={{ fontSize: 20, color: 'red' }}>삭제</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -154,6 +252,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 5,
+  },
+  deleteModalView: {
+    flex: 1,
+    marginTop: '75%',
+    margin: 30,
+    marginBottom: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: 'gray',
+  },
+  deleteButton: {
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: 'red',
   },
 });
 

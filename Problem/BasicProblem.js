@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
 import {
   getFirestore,
@@ -25,11 +26,12 @@ import AnswerModal from './AnswerModal';
 //const db = getFirestore(app);
 
 export default function BasicProblem({ route }) {
-  const { problemId } = route.params;
-  //const problemId = '6101';
+  const { problemId, userEmail } = route.params;
   const [imageUrl, setImageUrl] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [bookMarkStar, setBookMarkStar] = useState(false);
   const [answer, setAnswer] = useState(null);
+  const isLoggedIn = true;
   const openModal = () => {
     setModalOpen(true);
     getAnswer();
@@ -51,11 +53,48 @@ export default function BasicProblem({ route }) {
       if (docSnap.exists()) {
         setImageUrl(docSnap.data().img);
         console.log('Document data:', docSnap.data());
+        if (isLoggedIn) getBookMark();
       } else {
         console.log('No such document!');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+  const addBookMark = async () => {
+    await setDoc(doc(firestore, 'users', userEmail, 'bookMark', problemId), {});
+  };
+  const deleteBookMark = async () => {
+    await deleteDoc(doc(firestore, 'users', userEmail, 'bookMark', problemId));
+  };
+  const getBookMark = async () => {
+    try {
+      var firstBookMark = [];
+      const querySnapshot = await getDocs(
+        collection(firestore, 'users', userEmail, 'bookMark')
+      );
+      querySnapshot.forEach((doc) => {
+        firstBookMark.push(doc.id);
+        console.log(doc.id, ' => ', doc.data());
+      });
+      if (firstBookMark.includes(problemId)) {
+        console.log('체크 true' + problemId);
+        setBookMarkStar(true);
+      } else {
+        console.log('체크 false' + problemId);
+        setBookMarkStar(false);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleBookMark = () => {
+    if (!bookMarkStar) {
+      setBookMarkStar(true);
+      addBookMark();
+    } else {
+      setBookMarkStar(false);
+      deleteBookMark();
     }
   };
   const getAnswer = async () => {
@@ -93,6 +132,15 @@ export default function BasicProblem({ route }) {
           <TouchableOpacity style={styles.answerButton} onPress={openModal}>
             <Text>정답보기</Text>
           </TouchableOpacity>
+          {isLoggedIn && (
+            <TouchableOpacity onPress={handleBookMark}>
+              {bookMarkStar ? (
+                <AntDesign name="star" size={24} color="yellow" />
+              ) : (
+                <AntDesign name="staro" size={24} color="black" />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
         {imageUrl && (
           <Image
