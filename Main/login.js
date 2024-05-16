@@ -41,11 +41,10 @@ const Login = ({ navigation, onLogin }) => {
       }
 
       const userRef = doc(firestore, 'users', email);
+      
       getDoc(userRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          // 로그인 성공 시 홈스크린으로 이동
-          navigation.navigate('HomeScreen');
-        } else {
+        if (!docSnap.exists()) {
+          // 회원 데이터가 없는 경우
           console.error('User data not found in Firestore.');
         }
       });

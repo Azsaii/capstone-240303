@@ -95,14 +95,16 @@ const screens = [
   },
 ];
 
-LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-]);
-
 const App = () => {
   const isWeb = useSelector((state) => state.isWeb);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    //console.warn("강제로 경고를 만듭니다 !");
+    //console.error("강제로 에러를 만듭니다 !");
+    LogBox.ignoreAllLogs(); // 모든 경고, 에러 로그박스 제거
+    //LogBox.ignoreLogs(['Warning: ...']);
+  }, [])
 
   useEffect(() => {
     if (isWeb) {

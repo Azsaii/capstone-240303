@@ -138,11 +138,11 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.titlecontainer}>
             <Text style={styles.title}>한국사 능력 검정 시험</Text>
             <Text style={{ fontSize: 15 }}>
-              환영합니다.{' '}
-              <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-                {userEmail}
+              {isLoggedIn ? <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                {userEmail.split('@')[0] + ' 님, '}   
               </Text>
-              님.
+               : <></>}
+                환영합니다.
             </Text>
             <StatusBar style="auto" />
           </View>

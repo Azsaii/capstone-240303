@@ -101,11 +101,10 @@ export default function Sidebar({ navigation }) {
   const navigationRef = useRef();
 
   const handleLogout = () => {
-    dispatch(setUserEmail(null));
+    dispatch(setUserEmail(''));
     dispatch(setLoggedIn(false));
     if (isWeb) {
       localStorage.removeItem('email');
-      console.log('머징');
     }
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
