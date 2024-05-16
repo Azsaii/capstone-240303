@@ -113,8 +113,12 @@ export default function KillerProblem() {
     getKillerProblem();
   }, []); //컴포넌트가 마운트될 때만 실행
   return (
-    <View>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      <ScrollView
+        persistentScrollbar={Platform.OS === 'android'}
+        alwaysBounceVertical={Platform.OS === 'ios'}
+        showsVerticalScrollIndicator={true}
+      >
         <View style={styles.problemInfo}>
           <Text style={{ paddingRight: 20 }}>
             한국사 능력 검정 시험 {Math.floor(parseInt(displayProblem) / 100)}회{' '}
@@ -130,7 +134,7 @@ export default function KillerProblem() {
             source={{
               uri: imageUrl,
             }}
-            style={{ width: 400, aspectRatio: 1 }}
+            style={{ width: '100%', aspectRatio: 1, marginBottom: 10 }}
             resizeMode="contain"
           />
         )}
@@ -160,10 +164,9 @@ export default function KillerProblem() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
     padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
   },
   problemInfo: {
     display: 'flex',

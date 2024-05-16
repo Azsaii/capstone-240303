@@ -17,9 +17,9 @@ function DictionaryExplain({ route }) {
   const [word, setWord] = useState(null);
   const [body, setBody] = useState('');
   useEffect(() => {
-    //fetch('http://192.168.219.123:8080/character/' + eid) //home
-    //fetch('http://192.168.219.129:8080/character/' + eid) //school
-    fetch('http://192.168.0.107:8080/character/' + eid) //school2
+    fetch('http://192.168.219.171:8080/character/' + eid) //home
+      //fetch('http://192.168.219.129:8080/character/' + eid) //school
+      //fetch('http://192.168.0.107:8080/character/' + eid) //school2
       //fetch('http://10.138.17.218:8080/character/' + eid) //another
       .then((response) => response.json())
       .then((data) => {
