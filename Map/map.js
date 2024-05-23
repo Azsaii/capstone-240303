@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Platform, TextInput } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
+import { Button } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
 
 // JSON 파일 불러오기
 const historicalSites = require('./Map.json');
@@ -14,19 +16,25 @@ const eraRanges = {
   joseon: { start: 1392, end: 1896 },
   openingPeriod: { start: 1897, end: 1909 },
   japaneseOccupation: { start: 1910, end: 1945 },
-  postLiberation: { start: 1945, end: 2024 }
+  postLiberation: { start: 1945, end: 2024 },
 };
 
 export default function MapScreen() {
-
-
   const [year, setYear] = useState('1500');
   const [startYear, setStartYear] = useState('-9999');
   const [endYear, setEndYear] = useState('-18');
-
+  const [isMarkerPressed, setIsMarkerPressed] = useState(false);
+  const [markerEid, setMarkerEid] = useState(null);
+  const navigation = useNavigation();
+  const handleMarkerPress = (eid) => {
+    setIsMarkerPressed(true);
+    setMarkerEid(eid);
+  };
+  const handleMapPress = () => {
+    setIsMarkerPressed(false);
+  };
   return (
     <View style={styles.container}>
-
       <View style={styles.selectEraView}>
         <TextInput
           style={styles.input}
@@ -59,7 +67,10 @@ export default function MapScreen() {
             <Picker.Item label="고려 936~1391" value="goryeo" />
             <Picker.Item label="조선 1392~1896" value="joseon" />
             <Picker.Item label="개항기 1897~1909" value="openingPeriod" />
-            <Picker.Item label="일제강점기 1910~1945" value="japaneseOccupation" />
+            <Picker.Item
+              label="일제강점기 1910~1945"
+              value="japaneseOccupation"
+            />
             <Picker.Item label="해방이후 1945~2024" value="postLiberation" />
           </Picker>
         )}
@@ -68,13 +79,14 @@ export default function MapScreen() {
         style={styles.map}
         initialRegion={{
           latitude: 37.5665,
-          longitude: 127.9780,
+          longitude: 127.978,
           latitudeDelta: 10,
           longitudeDelta: 10,
         }}
+        onPress={handleMapPress}
       >
         {historicalSites
-          .filter(site => {
+          .filter((site) => {
             const era = parseInt(site.era);
             const start = parseInt(startYear);
             const end = parseInt(endYear);
@@ -83,18 +95,37 @@ export default function MapScreen() {
           .map((site, index) => (
             <Marker
               key={site.key}
-              coordinate={{ latitude: site.latitude, longitude: site.longitude }}
+              coordinate={{
+                latitude: site.latitude,
+                longitude: site.longitude,
+              }}
               title={site.title}
               description={site.description}
+              onPress={() => handleMarkerPress(site.eid)}
             >
               <Callout style={styles.callout}>
                 <Text style={styles.title}>{site.title}</Text>
                 <Text>{site.description}</Text>
               </Callout>
             </Marker>
-          ))
-        }
+          ))}
       </MapView>
+      {isMarkerPressed && (
+        <View style={styles.dictionaryButtonContainer}>
+          <Button
+            title="용어사전 →"
+            onPress={() =>
+              navigation.navigate('용어사전', {
+                screen: 'Explain',
+                params: {
+                  eid: markerEid,
+                  fromMap: true,
+                },
+              })
+            }
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -105,11 +136,10 @@ const styles = StyleSheet.create({
   },
   callout: {
     alignItems: 'center',
-
   },
   titleText: {
-    fontWeight: 'bold',  // 글씨를 굵게
-    fontSize: 20,        // 글씨 크기는 20
+    fontWeight: 'bold', // 글씨를 굵게
+    fontSize: 20, // 글씨 크기는 20
   },
   map: {
     width: '100%',
@@ -141,5 +171,11 @@ const styles = StyleSheet.create({
   picker: {
     flex: 1, // 가용 공간을 균등하게 차지
     height: '40%',
-  }
+  },
+  dictionaryButtonContainer: {
+    position: 'absolute', // 위치를 절대적으로 설정
+    width: '100%',
+    bottom: 0, // 화면 하단에 위치
+    zIndex: 1, // 다른 뷰들 위에 떠 있게 설정
+  },
 });

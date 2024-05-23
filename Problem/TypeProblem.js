@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
   Text,
@@ -7,11 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  PanResponder,
+  Animated,
 } from 'react-native';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { SelectList } from 'react-native-dropdown-select-list';
 import {
-  getFirestore,
   doc,
   getDoc,
   setDoc,
@@ -20,12 +20,12 @@ import {
   query,
   where,
   getDocs,
-  collectionGroup,
 } from 'firebase/firestore';
-import { getDownloadURL, getStorage, ref } from 'firebase/storage';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import AnswerModal from './AnswerModal';
 import { firestore } from '../firebaseConfig';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   //const { param } = route.params;
@@ -38,6 +38,11 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   const [bookMarkList, setBookMarkList] = useState([]);
   const [bookMarkStar, setBookMarkStar] = useState(false);
   const [answer, setAnswer] = useState(null);
+  const [imageAspectRatio, setImageAspectRatio] = useState(1);
+  const [isScrollButton, setIsScrollButton] = useState(false);
+  const scrollViewRef = useRef(null);
+  const [scrollIntervalId, setScrollIntervalId] = useState(null);
+  const isFocused = useIsFocused();
   const openModal = () => {
     setModalOpen(true);
     getAnswer();
@@ -49,7 +54,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   const changeData = async (temp) => {
     try {
       const parentCollectionId = 'exam round'; // 부모 컬렉션
-      const subCollectionIds = ['61', '62', '63', '64']; // 자식 컬렉션
+      const subCollectionIds = ['61', '62', '63', '64', '65', '66', '67', '68']; // 자식 컬렉션
 
       //각 자식컬렉션에 대해 반복적으로 쿼리를 수행
       var newProblems = [];
@@ -88,7 +93,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   const getAnswer = async () => {
     try {
       const docRef = doc(
-        db,
+        firestore,
         'answer round',
         String(Math.floor(parseInt(displayProblem) / 100)),
         String(Math.floor(parseInt(displayProblem) / 100)),
@@ -215,10 +220,103 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
     //setSelectlistData(param === 'era' ? eraData : typeData);
     changeData(param === 'era' ? '전삼국' : '사건');
   }, []); //컴포넌트가 마운트될 때만 실행
+
+  useEffect(() => {
+    if (isLoggedIn && problems.length > 0)
+      getBookMark(problems[problemCount - 1].data().id);
+  }, [isFocused]);
+
+  //좌우 화면 슬라이드로 문제 넘기기
+  const [panX] = useState(new Animated.Value(0));
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([null, { dx: panX }], {
+      useNativeDriver: false,
+    }),
+    onPanResponderRelease: (evt, gestureState) => {
+      // 화면의 50% 이상을 슬라이드할 때마다 이전 또는 다음 문제 호출
+      if (Math.abs(gestureState.dx) > 50) {
+        if (gestureState.dx > 0) {
+          handlePrevious();
+        } else {
+          handleNext();
+        }
+      }
+      // 애니메이션 초기화
+      Animated.timing(panX, {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: false,
+      }).start(() => {
+        // 애니메이션이 끝난 후 x 좌표를 0으로 초기화합니다.
+        panX.setValue(0);
+      });
+    },
+  });
+
+  const animatedStyle = { transform: [{ translateX: panX }] };
+
+  //이미지 크기에 따른 화면 조절
+  useEffect(() => {
+    if (imageUrl) {
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          // 이미지의 원본 비율에 따라 상태 업데이트
+          const aspectRatio = width / height;
+          setImageAspectRatio(aspectRatio);
+        },
+        (error) => {
+          console.error(`Couldn't get the image size: ${error.message}`);
+        }
+      );
+    }
+  }, [imageUrl]);
+
+  //이미지 높이가 길어서 스크롤이 필요할 시 추가적으로 상하 이동 버튼을 생성
+  const handleScrollButton = (contentWidth, contentHeight) => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.measure((x, y, width, height, pageX, pageY) => {
+        // 콘텐츠 높이가 스크롤뷰 높이보다 크면 스크롤이 필요
+        if (contentHeight > height) {
+          setIsScrollButton(true);
+        } else {
+          setIsScrollButton(false);
+        }
+      });
+    }
+  };
+
+  const upScrolling = () => {
+    const id = setInterval(() => {
+      scrollViewRef.current?.measure((x, y, width, height, pageX, pageY) => {
+        const newScrollY = pageY - 150;
+        scrollViewRef.current?.scrollTo({
+          y: newScrollY,
+          animated: true,
+        });
+      });
+    }, 100);
+
+    setScrollIntervalId(id);
+  };
+
+  const downScrolling = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
+
+  const stopScrolling = () => {
+    if (scrollIntervalId) {
+      clearInterval(scrollIntervalId);
+      setScrollIntervalId(null);
+      console.log('stop');
+    }
+  };
+
   return (
-    <View>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text>{param}</Text>
+    <View style={styles.container}>
+      <ScrollView ref={scrollViewRef} onContentSizeChange={handleScrollButton}>
         <View style={styles.problemInfo}>
           <SelectList
             setSelected={(val) => {
@@ -229,52 +327,56 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
             }}
             data={selectlistData}
             save="value"
-            placeholder={param === 'era' ? '시대 설정' : '타입 설정'}
+            placeholder={param === 'era' ? '전삼국' : '사건'}
             boxStyles={{ width: 300, marginRight: 15 }}
           />
-          {isLoggedIn && (
-            <TouchableOpacity onPress={handleBookMark}>
-              {bookMarkStar ? (
-                <AntDesign name="star" size={24} color="yellow" />
-              ) : (
-                <AntDesign name="staro" size={24} color="black" />
+        </View>
+        {displayProblem ? (
+          <Animated.View
+            style={[styles.content, animatedStyle]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.problemInfo}>
+              <Text style={{ paddingRight: 20 }}>
+                한국사 능력 검정 시험{' '}
+                {Math.floor(parseInt(displayProblem) / 100)}회{' '}
+                {parseInt(displayProblem) % 100}번
+              </Text>
+              <TouchableOpacity style={styles.answerButton} onPress={openModal}>
+                <Text>정답보기</Text>
+              </TouchableOpacity>
+              {isLoggedIn && (
+                <TouchableOpacity onPress={handleBookMark}>
+                  {bookMarkStar ? (
+                    <AntDesign name="star" size={24} color="yellow" />
+                  ) : (
+                    <AntDesign name="staro" size={24} color="black" />
+                  )}
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.problemInfo}>
-          <Text style={{ paddingRight: 20 }}>
-            한국사 능력 검정 시험 {Math.floor(parseInt(displayProblem) / 100)}회{' '}
-            {parseInt(displayProblem) % 100}번
-          </Text>
-          <TouchableOpacity style={styles.answerButton} onPress={openModal}>
-            <Text>정답보기</Text>
-          </TouchableOpacity>
-        </View>
-        {imageUrl && (
-          <Image
-            key={imageUrl}
-            source={{
-              uri: imageUrl,
-            }}
-            style={{ width: 400, aspectRatio: 1 }}
-            resizeMode="contain"
+            </View>
+            {imageUrl && (
+              <Image
+                key={imageUrl}
+                source={{
+                  uri: imageUrl,
+                }}
+                style={{
+                  width: '100%',
+                  height: undefined,
+                  aspectRatio: imageAspectRatio,
+                }}
+                resizeMode="contain"
+              />
+            )}
+          </Animated.View>
+        ) : (
+          <Spinner
+            visible={true}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
           />
         )}
-        <View style={styles.arrowButton}>
-          <TouchableOpacity onPress={handlePrevious}>
-            <Text>이전</Text>
-            <MaterialIcons name="west" size={30} color="black" />
-          </TouchableOpacity>
-          <Text>
-            {problemCount}/{problems.length}
-          </Text>
-          <TouchableOpacity onPress={handleNext}>
-            <Text> 다음</Text>
-            <MaterialIcons name="east" size={30} color="black" />
-          </TouchableOpacity>
-        </View>
         <AnswerModal
           isOpen={isModalOpen}
           onClose={closeModal}
@@ -282,22 +384,55 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
           answer={answer}
         />
       </ScrollView>
+      <View style={styles.arrowButton}>
+        <TouchableOpacity onPress={handlePrevious}>
+          <Text>이전</Text>
+          <MaterialIcons name="west" size={30} color="black" />
+        </TouchableOpacity>
+        <Text>
+          {problemCount}/{problems.length}
+        </Text>
+        <TouchableOpacity onPress={handleNext}>
+          <Text> 다음</Text>
+          <MaterialIcons name="east" size={30} color="black" />
+        </TouchableOpacity>
+      </View>
+      {isScrollButton && (
+        <View style={styles.scrollButtonsContainer}>
+          <TouchableOpacity
+            onPressIn={() => upScrolling()}
+            onPressOut={stopScrolling}
+          >
+            <AntDesign name="upcircle" size={36} color="orange" />
+          </TouchableOpacity>
+          <TouchableOpacity onPressIn={() => downScrolling()}>
+            <AntDesign
+              name="downcircle"
+              size={36}
+              color="orange"
+              style={{ marginTop: 10 }}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
     padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
   },
   problemInfo: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  content: {
+    paddingBottom: 60,
   },
   answerButton: {
     backgroundColor: 'orange',
@@ -308,5 +443,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scrollButtonsContainer: {
+    position: 'absolute', // 위치를 절대적으로 설정
+    bottom: 20, // 화면 하단에 위치
+    right: 20,
+    backgroundColor: 'transparent', // 배경색 투명
+    zIndex: 1, // 다른 뷰들 위에 떠 있게 설정
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
   },
 });

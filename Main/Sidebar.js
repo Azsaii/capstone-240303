@@ -11,14 +11,15 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {
   createDrawerNavigator,
   DrawerToggleButton,
   DrawerContentScrollView,
   DrawerItemList,
+  DrawerItem,
 } from '@react-navigation/drawer';
 
-import SideScreen from './side';
 import Statistics from './statistics';
 import Login from './login';
 import CreateId from './createId';
@@ -39,12 +40,12 @@ import MapScreen from '../Map/map';
 
 import RecommendationQuestion from '../RecommendationPractice/RecommendationQuestion';
 
+LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
 
-const handleRefresh = () => {
-};
+const handleRefresh = () => {};
 
 const Drawer = createDrawerNavigator();
 const CustomBackButton = ({ navigation }) => {
@@ -67,6 +68,7 @@ const CustomBackButton = ({ navigation }) => {
 };
 
 const CustomDrawerContent = (props) => {
+  const navigation = useNavigation();
   return (
     <DrawerContentScrollView {...props}>
       <View style={{ alignItems: 'center', marginTop: 20 }}>
@@ -100,11 +102,10 @@ export default function Sidebar({ navigation }) {
   const navigationRef = useRef();
 
   const handleLogout = () => {
-    dispatch(setUserEmail(null));
+    dispatch(setUserEmail(''));
     dispatch(setLoggedIn(false));
     if (isWeb) {
       localStorage.removeItem('email');
-      console.log('머징');
     }
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
@@ -151,7 +152,7 @@ export default function Sidebar({ navigation }) {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen
-        name="HomeScreen"
+        name="한국사 에듀"
         component={HomeScreen}
         options={{
           drawerIcon: ({ focused, size }) => (
@@ -282,7 +283,6 @@ export default function Sidebar({ navigation }) {
       </Drawer.Screen>
       <Drawer.Screen
         name="킬러문제"
-        component={KillerProblem}
         options={{
           drawerIcon: ({ focused, size }) => (
             <MaterialIcons name="do-not-disturb-on" size={19} color="black" />
@@ -307,7 +307,9 @@ export default function Sidebar({ navigation }) {
             </View>
           ),
         }}
-      />
+      >
+        {() => <KillerProblem isLoggedIn={isLoggedIn} userEmail={userEmail} />}
+      </Drawer.Screen>
       <Drawer.Screen
         name="추천문제"
         options={{
@@ -344,8 +346,9 @@ export default function Sidebar({ navigation }) {
         }
       </Drawer.Screen>
       <Drawer.Screen
-        name="오답노트"
+        name="다시풀기"
         options={{
+          headerShown: false,
           drawerIcon: ({ focused, size }) => (
             <MaterialIcons name="book" size={19} color="black" />
           ),
@@ -364,7 +367,7 @@ export default function Sidebar({ navigation }) {
                   marginBottom: 3,
                 }}
               >
-                오답노트
+                다시풀기
               </Text>
             </View>
           ),
@@ -539,6 +542,7 @@ export default function Sidebar({ navigation }) {
         name="용어사전"
         component={DictionaryStack}
         options={{
+          headerShown: false,
           drawerIcon: ({ focused, size }) => (
             <MaterialIcons name="menu-book" size={19} color="black" />
           ),

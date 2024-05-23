@@ -1,30 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  BackHandler,
+} from 'react-native';
 import { List } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { DictionaryExplain } from './DictionaryExplain';
 import { ScrollView } from 'react-native-gesture-handler';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
+import Spinner from 'react-native-loading-spinner-overlay';
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
-function DictionaryStack() {
+function DictionaryStack({ screen }) {
+  const navigation = useNavigation();
+
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Dictionary" component={DictionaryTab} />
-      <Stack.Screen name="Explain" component={DictionaryExplain} />
+      <Stack.Screen
+        name="Dictionary"
+        component={DictionaryTab}
+        options={{
+          headerTitle: '용어사전',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{ marginLeft: 10 }}
+              onPress={() => {
+                navigation.goBack();
+              }}
+            >
+              <MaterialIcons name="arrow-back" size={30} color="black" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="Explain"
+        component={DictionaryExplain}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
 
 function DictionaryTab() {
   const [itemsCharacter, setItemsCharacter] = useState({});
-  const [itemsAgency, setItemsAgency] = useState({});
+  const [itemsArtifact, setItemsArtifact] = useState({});
   const [itemsIncident, setItemsIncident] = useState({});
+  const [itemsConcept, setItemsConcept] = useState({});
+  const isFocused = useIsFocused();
+  const navigation = useNavigation();
+  useEffect(() => {
+    const backAction = () => {
+      navigation.goBack();
+      return true;
+    };
 
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [isFocused]);
   return (
     <Tab.Navigator initialRouteName="인물">
       <Tab.Screen
@@ -38,12 +84,12 @@ function DictionaryTab() {
         )}
       />
       <Tab.Screen
-        name="단체"
+        name="유물"
         children={() => (
           <DictionaryScreen
-            type="agency"
-            items={itemsAgency}
-            setItems={setItemsAgency}
+            type="artifact"
+            items={itemsArtifact}
+            setItems={setItemsArtifact}
           />
         )}
       />
@@ -57,12 +103,22 @@ function DictionaryTab() {
           />
         )}
       />
+      <Tab.Screen
+        name="개념"
+        children={() => (
+          <DictionaryScreen
+            type="concept"
+            items={itemsConcept}
+            setItems={setItemsConcept}
+          />
+        )}
+      />
     </Tab.Navigator>
   );
 }
 
 function DictionaryScreen({ type, items, setItems }) {
-  const [expanded, setExpanded] = React.useState(true);
+  // const [expanded, setExpanded] = React.useState(true);
   const eras = [
     '전삼국',
     '삼국',
@@ -75,7 +131,7 @@ function DictionaryScreen({ type, items, setItems }) {
     '해방이후',
   ]; // 예시 시대 목록
   const navigation = useNavigation();
-  const handlePress = () => setExpanded(!expanded);
+  // const handlePress = () => setExpanded(!expanded);
   const fetchData = async () => {
     try {
       const newItems = {};
@@ -103,33 +159,49 @@ function DictionaryScreen({ type, items, setItems }) {
   return (
     <View>
       <ScrollView>
-        <List.Section>
-          {eras.map(
-            (era) =>
-              items[era] && (
-                <List.Accordion
-                  title={era}
-                  left={(props) => <List.Icon {...props} icon="folder" />}
-                >
-                  {items[era].map((item, index) => (
-                    <List.Item
-                      key={index}
-                      title={item.name}
-                      onPress={() =>
-                        navigation.navigate('Explain', {
-                          word: item,
-                          eid: item.eid,
-                        })
-                      }
-                    />
-                  ))}
-                </List.Accordion>
-              )
-          )}
-        </List.Section>
+        {Object.keys(items).length !== 0 ? (
+          <List.Section>
+            {eras.map(
+              (era) =>
+                items[era] && (
+                  <List.Accordion
+                    title={era}
+                    left={(props) => (
+                      <List.Icon {...props} icon="checkbox-intermediate" />
+                    )}
+                  >
+                    {items[era].map((item, index) => (
+                      <List.Item
+                        key={index}
+                        title={item.name}
+                        onPress={() =>
+                          navigation.navigate('Explain', {
+                            eid: item.eid,
+                            fromMap: false,
+                          })
+                        }
+                      />
+                    ))}
+                  </List.Accordion>
+                )
+            )}
+          </List.Section>
+        ) : (
+          <Spinner
+            visible={true}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
+          />
+        )}
       </ScrollView>
     </View>
   );
 }
 
 export default DictionaryStack;
+
+const styles = StyleSheet.create({
+  spinnerTextStyle: {
+    color: '#FFF',
+  },
+});

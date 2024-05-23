@@ -9,7 +9,6 @@ import { setUserEmail, setLoggedIn } from './state';
 
 // 메인 화면
 import Sidebar from './Main/Sidebar';
-import SideScreen from './Main/side';
 import Statistics from './Main/statistics';
 import Planner from './Main/planner';
 import Login from './Main/login';
@@ -38,11 +37,6 @@ const screens = [
   {
     name: 'Sidebar',
     component: Sidebar,
-    options: { headerShown: false },
-  },
-  {
-    name: 'SideScreen',
-    component: SideScreen,
     options: { headerShown: false },
   },
   {
@@ -95,14 +89,16 @@ const screens = [
   },
 ];
 
-LogBox.ignoreLogs(['Warning: ...']); // 경고창 안뜨게 하기
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-]);
-
 const App = () => {
   const isWeb = useSelector((state) => state.isWeb);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    //console.warn("강제로 경고를 만듭니다 !");
+    //console.error("강제로 에러를 만듭니다 !");
+    LogBox.ignoreAllLogs(); // 모든 경고, 에러 로그박스 제거
+    //LogBox.ignoreLogs(['Warning: ...']);
+  }, [])
 
   useEffect(() => {
     if (isWeb) {
