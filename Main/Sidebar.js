@@ -18,7 +18,6 @@ import {
   DrawerItemList,
 } from '@react-navigation/drawer';
 
-import SideScreen from './side';
 import Statistics from './statistics';
 import Login from './login';
 import CreateId from './createId';
@@ -151,7 +150,7 @@ export default function Sidebar({ navigation }) {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen
-        name="HomeScreen"
+        name="한국사 에듀"
         component={HomeScreen}
         options={{
           drawerIcon: ({ focused, size }) => (

@@ -9,7 +9,6 @@ import { setUserEmail, setLoggedIn } from './state';
 
 // 메인 화면
 import Sidebar from './Main/Sidebar';
-import SideScreen from './Main/side';
 import Statistics from './Main/statistics';
 import Planner from './Main/planner';
 import Login from './Main/login';
@@ -38,11 +37,6 @@ const screens = [
   {
     name: 'Sidebar',
     component: Sidebar,
-    options: { headerShown: false },
-  },
-  {
-    name: 'SideScreen',
-    component: SideScreen,
     options: { headerShown: false },
   },
   {

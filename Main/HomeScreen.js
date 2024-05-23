@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,51 +7,16 @@ import {
   Image,
   StyleSheet,
   Linking,
-  LogBox,
 } from 'react-native'; // StyleSheet import 추가
 import { useSelector, useDispatch } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native';
 import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
-import { ScrollRestoration } from 'react-router-dom';
 
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-]);
-
-const Achievement = 52;
 const currentDate = new Date();
 const testDate = new Date('2024-05-25');
 //const MainImage = 'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%EB%B0%B0%EA%B2%BD.png?alt=media&token=d57d8462-d4f1-43b6-a92e-968d30cb27f0'
 const imageurl =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EB%B0%B0%EA%B2%BD.webp?alt=media&token=cabac6ad-77a8-4c88-9366-a33cd01c5bf6';
-const imageurl2 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%EB%B0%B0%EA%B2%BD.jpg?alt=media&token=ecd1f36d-ecc3-4a81-a159-1e2f002a8a87';
-const imageurl3 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%ED%95%9C%EC%84%B1%EB%8C%80%ED%95%99%EA%B5%90.jpg?alt=media&token=dc8b154b-e4ac-49fe-9031-317465a962d7';
-const imageurl4 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%ED%99%88%EB%9D%BC%EB%B2%A8.jpg?alt=media&token=63425a12-b57b-4035-aa33-f5b11a2f5067';
-const imageurl5 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%8B%9C%ED%97%98%EC%9D%BC%EC%A0%95.png?alt=media&token=9b215c0e-97bf-4a40-b822-b8adec900752';
-//5번 시험일정
-const imageurl6 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%8B%9C%ED%97%98%EC%9E%A5%EC%9C%84%EC%B9%98.png?alt=media&token=6442cd8e-b2cf-4d1e-961e-1ac1a95a953b';
-const imageurl7 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%9B%90%EC%84%9C%EC%A0%91%EC%88%98.png?alt=media&token=88b005ae-c46a-4f40-9cea-388df96cedfa';
-const imageurl8 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EA%B5%AD%EC%82%AC%ED%8E%B8%EC%B0%AC%EC%9C%84%EC%9B%90%ED%9A%8C.jpg?alt=media&token=2389d417-430d-4466-baae-345b0c19f807';
-const imageurl9 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%ED%95%9C%EA%B5%AD%EC%82%AC%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4.jpg?alt=media&token=168b5172-1e7b-4e6f-8b4c-57b5a10f4b65';
-const imageicon1 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EA%B8%B0%EC%B6%9C.png?alt=media&token=935af2c3-4f95-4a02-93bb-5db425f1de67';
-const imageicon2 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%8B%9C%EB%8C%80%EB%B3%84.png?alt=media&token=abb013f1-aa34-4f10-9b6c-28829def5540';
-const imageicon3 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%9C%A0%ED%98%95%EB%B3%84.png?alt=media&token=b8624708-862d-455a-9c9e-970cd6337495';
-const imageicon4 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%98%A4%EB%8B%B5%EB%85%B8%ED%8A%B8.png?alt=media&token=d4ef9ade-3d62-42ae-a5b4-bd6525dc4d5d';
-const imageicon5 =
-  'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9D%B4%EB%AF%B8%EC%A7%80%2F%EC%95%84%EC%9D%B4%EC%BD%98%EC%97%AD%EC%82%AC%EC%9D%B4%EC%95%BC%EA%B8%B0.png?alt=media&token=1714beb0-a163-4e87-a0b4-60af19970931';
 
 const timeDifference = testDate - currentDate;
 const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
@@ -59,38 +24,6 @@ const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 const LinkButtonPressed = () => {
   const examScheduleLink =
     'https://www.historyexam.go.kr/pageLink.do?link=examSchedule&netfunnel_key=E934081640D391F04FC56AC6C042B32037B017A93AECD22ED318655502C0D5E0FA9916BC7EEDE001B98B1F659245D8B5B481AF320FC49BDFDDA9E487CC5FA5E3C219884E7E69AE8FCA7EF380A6F8D3B91CF6BADBB12E604C00464C9F2FE9B694EE4301E896CCCBABBF1C7F32CA7A9D942C312C302C30';
-  Linking.openURL(examScheduleLink).catch((err) =>
-    console.error('링크를 여는 중 오류 발생:', err)
-  );
-};
-const Link1 = () => {
-  const examScheduleLink =
-    'https://www.historyexam.go.kr/pst/list.do?bbs=noti&netfunnel_key=4F315CE4A29D6F3D49839EB5A3B9191FEF8546B25998EC2052C61D241427C4958E6DAB7217606E99262E063BD05AB8EC4C171BB07FC8A9F5810EFA3989156F09C219884E7E69AE8FCA7EF380A6F8D3B91CF6BADBB12E604C00464C9F2FE9B694D33D11D672413A9D3AD634B434176C80312C302C30';
-  Linking.openURL(examScheduleLink).catch((err) =>
-    console.error('링크를 여는 중 오류 발생:', err)
-  );
-};
-const Link2 = () => {
-  const examScheduleLink =
-    'https://www.historyexam.go.kr/pageLink.do?link=examArea&netfunnel_key=27C91A4C564EFF0A164E9F5918532E493CFC14C442784B17E2AF5E4D3ABDC10F470E0011C8D26FFF07E72FDA269343FD4CB6B0FEFE8B68023EF4207F3FCC565D2822BAFEB69BBD22D19BB2DEA4ABC17B5040FF6CCA34DB8A028CF47044B6F18A234B1EEDF2C1E725FD8CB4420BEBC394352C312C302C30';
-  Linking.openURL(examScheduleLink).catch((err) =>
-    console.error('링크를 여는 중 오류 발생:', err)
-  );
-};
-const Link3 = () => {
-  const examScheduleLink = 'https://www.history.go.kr/';
-  Linking.openURL(examScheduleLink).catch((err) =>
-    console.error('링크를 여는 중 오류 발생:', err)
-  );
-};
-const Link4 = () => {
-  const examScheduleLink = 'https://db.history.go.kr/';
-  Linking.openURL(examScheduleLink).catch((err) =>
-    console.error('링크를 여는 중 오류 발생:', err)
-  );
-};
-const Link5 = () => {
-  const examScheduleLink = 'https://www.historyexam.go.kr/user/userLgin.do';
   Linking.openURL(examScheduleLink).catch((err) =>
     console.error('링크를 여는 중 오류 발생:', err)
   );
