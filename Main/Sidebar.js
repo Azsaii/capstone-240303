@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
+import { setLoggedIn, setUserEmail, setUserName } from '../state';
 import {
   Text,
   View,
@@ -96,6 +96,7 @@ export default function Sidebar({ navigation }) {
   const handleLogout = () => {
     dispatch(setUserEmail(''));
     dispatch(setLoggedIn(false));
+    dispatch(setUserName(''));
 
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
