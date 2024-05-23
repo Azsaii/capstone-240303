@@ -5,6 +5,8 @@ import Svg, { Line, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 're
 import { useSelector } from 'react-redux';
 import { firestore } from '../firebaseConfig';
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -50,67 +52,86 @@ const BarChart = ({ data }) => {
 
   return (
     <ScrollView horizontal={true} showsHorizontalScrollIndicator={true} style={{ marginTop: 20 }}>
-  <View>
-    <Svg height={chartHeight} width={chartWidth}>
-      <Defs>
-        <LinearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop offset="0%" stopColor="#3498db" stopOpacity="1" />
-          <Stop offset="100%" stopColor="#8A2BE2" stopOpacity="1" />
-        </LinearGradient>
-      </Defs>
-      {/* 가로축 */}
-      <Line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#e0e0e0" strokeWidth="2" />
-      {/* 세로축 */}
-      <Line x1={0} y1={0} x2={0} y2={verticalAxisHeight} stroke="#e0e0e0" strokeWidth="2" />
-      {data.map((value, index) => (
-        <React.Fragment key={index}>
-          {/* 막대 그래프 */}
-          <Rect
-            x={index * (barWidth + 10) + 5}
-            y={chartHeight - (value / maxValue) * verticalAxisHeight}
-            width={barWidth}
-            height={(value / maxValue) * verticalAxisHeight}
-            fill={color}
-            rx="4" // 모서리 둥글게 처리
-          />
-          {/* 레이블 및 값 */}
-          <SvgText
-            x={index * (barWidth + 10) + barWidth / 2 + 5}
-            y={index % 2 === 1 ? chartHeight - 30 : chartHeight - 20}
-            fontSize="14"
-            fill="black"
-            textAnchor="middle"
-          >
-            {list[index]}
-          </SvgText>
-          <SvgText
-            x={index * (barWidth + 10) + barWidth / 2 + 5}
-            y={chartHeight - 6}
-            fontSize="12"
-            fill="#ffffff"
-            textAnchor="middle"
-          >
-            {value}
-          </SvgText>
-        </React.Fragment>
-      ))}
-    </Svg>
-  </View>
-</ScrollView>
+      <View>
+        <Svg height={chartHeight} width={chartWidth}>
+          <Defs>
+            <LinearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="#3498db" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#8A2BE2" stopOpacity="1" />
+            </LinearGradient>
+          </Defs>
+          {/* 가로축 */}
+          <Line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#e0e0e0" strokeWidth="2" />
+          {/* 세로축 */}
+          <Line x1={0} y1={0} x2={0} y2={verticalAxisHeight} stroke="#e0e0e0" strokeWidth="2" />
+          {data.map((value, index) => (
+            <React.Fragment key={index}>
+              {/* 막대 그래프 */}
+              <Rect
+                x={index * (barWidth + 10) + 5}
+                y={chartHeight - (value / maxValue) * verticalAxisHeight}
+                width={barWidth}
+                height={(value / maxValue) * verticalAxisHeight}
+                fill={color}
+                rx="4" // 모서리 둥글게 처리
+              />
+              {/* 레이블 및 값 */}
+              <SvgText
+                x={index * (barWidth + 10) + barWidth / 2 + 5}
+                y={index % 2 === 1 ? chartHeight - 30 : chartHeight - 20}
+                fontSize="14"
+                fill="black"
+                textAnchor="middle"
+              >
+                {list[index]}
+              </SvgText>
+              <SvgText
+                x={index * (barWidth + 10) + barWidth / 2 + 5}
+                y={chartHeight - 6}
+                fontSize="12"
+                fill="#ffffff"
+                textAnchor="middle"
+              >
+                {value}
+              </SvgText>
+            </React.Fragment>
+          ))}
+        </Svg>
+      </View>
+    </ScrollView>
   );
 };
 
 //메인 랜더링
 const Statistics = () => {
+
+  const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const TrueCheck = 100;
-  const FalseCheck = 5;
-  const truePercentage = (TrueCheck / (TrueCheck + FalseCheck)) * 100;
-  const roundedPercentage = parseFloat(truePercentage.toFixed(2));
   const Totalscore = 436;
   const imageurl =
     'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%ED%86%B5%EA%B3%84%EB%B0%B0%EA%B2%BD%EA%B2%BD.jpg?alt=media&token=0bbb3935-6ca6-4eba-8093-65771dcbb7f0';
-  const time = 302;
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isLoggedIn) {
+
+        Alert.alert(
+          '통계',
+          '로그인 후 이용해주세요',
+          [
+            {
+              text: '예',
+
+              onPress: () => navigation.navigate('로그인'),
+            }
+          ],
+        );
+        return;
+      } else {
+      }
+    }, [isLoggedIn, userEmail])
+  );
 
   const [data1, setData1] = useState([]); // 시대별 풀이 데이터
   const [data2, setData2] = useState([]); // 유형별 풀이 데이터
@@ -154,9 +175,6 @@ const Statistics = () => {
       } catch (error) {
         console.error("Error getting document:", error);
       }
-
-
-
     };
 
     if (userEmail) {
@@ -191,20 +209,14 @@ const Statistics = () => {
         <View style={styles.studybuttonContainer}>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => {
-              console.log(`"${studyera}" 공부하러 가기 버튼이 눌렸습니다.`); //화면 띄우기 추가
-            }}
+            onPress={() => navigation.navigate('시대별 풀이')}
           >
             <Text style={styles.buttonText}>{`${studyera} 공부하러 가기`}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.button}
-            onPress={() => {
-              console.log(
-                `"${studycategory}" 공부하러 가기 버튼이 눌렸습니다.`
-              ); //화면띄우기 추가
-            }}
+            onPress={() => navigation.navigate('유형별 풀이')}
           >
             <Text
               style={styles.buttonText}
@@ -233,9 +245,7 @@ const Statistics = () => {
       </View>
       <Button
         title="공부하러가기"
-        onPress={() => {
-          //학습창으로 이동하는 기능 넣어야함.
-        }}
+        onPress={() => navigation.navigate('기출문제')}
         buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
       />
     </ScrollView>
@@ -321,22 +331,4 @@ const styles = StyleSheet.create({
   },
 });
 
-function StatisticsWrapper({ navigation }) {
-  const isLoggedIn = useSelector((state) => state.isLoggedIn);
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      // 로그인하지 않았을 때의 로직
-      Alert.alert("알림", "로그인 후 이용해주세요", [
-        {
-          text: "확인",
-          onPress: () => navigation.navigate('HomeScreen'), // 또는 적절한 화면으로 리디렉션
-        },
-      ]);
-    }
-  }, [isLoggedIn, navigation]);
-
-  return isLoggedIn ? <Statistics /> : null;
-}
-
-export default StatisticsWrapper;
+export default Statistics;

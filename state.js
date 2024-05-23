@@ -5,12 +5,14 @@ import { createStore } from 'redux';
 const initialState = {
   isLoggedIn: false,
   userEmail: '',
+  userName: '',
   isWeb: false,
 };
 
 // 액션 타입 정의
 const SET_LOGGED_IN = 'SET_LOGGED_IN';
 const SET_USER_EMAIL = 'SET_USER_EMAIL';
+const SET_USER_NAME = 'SET_USER_NAME';
 const SET_IS_WEB = 'SET_IS_WEB';
 
 // 액션 생성 함수 정의
@@ -21,6 +23,10 @@ export const setLoggedIn = (isLoggedIn) => ({
 export const setUserEmail = (userEmail) => ({
   type: SET_USER_EMAIL,
   userEmail,
+});
+export const setUserName = (userName) => ({
+  type: SET_USER_NAME,
+  userName,
 });
 export const setIsWeb = (isWeb) => ({
   type: SET_IS_WEB,
@@ -34,6 +40,8 @@ const reducer = (state = initialState, action) => {
       return { ...state, isLoggedIn: action.isLoggedIn };
     case SET_USER_EMAIL:
       return { ...state, userEmail: action.userEmail };
+    case SET_USER_NAME:
+      return { ...state, userName: action.userName };
     case SET_IS_WEB:
       return { ...state, isWeb: action.isWeb };
     default:
