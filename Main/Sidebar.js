@@ -110,21 +110,21 @@ export default function Sidebar({ navigation }) {
   }, [isLoggedIn]);
 
   const handleLogoutButtonPress = () => {
-      Alert.alert(
-        '로그아웃',
-        '로그아웃 하시겠습니까?',
-        [
-          {
-            text: '예',
-            onPress: () => handleLogout(), // Yes를 누르면 로그아웃 함수를 호출합니다.
-          },
-          {
-            text: '아니요',
-            style: 'cancel',
-          },
-        ],
-        { cancelable: false }
-      );
+    Alert.alert(
+      '로그아웃',
+      '로그아웃 하시겠습니까?',
+      [
+        {
+          text: '예',
+          onPress: () => handleLogout(), // Yes를 누르면 로그아웃 함수를 호출합니다.
+        },
+        {
+          text: '아니요',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   return (
@@ -160,7 +160,7 @@ export default function Sidebar({ navigation }) {
                   marginBottom: 3,
                 }}
               >
-                Home
+                홈 화면
               </Text>
             </View>
           ),
