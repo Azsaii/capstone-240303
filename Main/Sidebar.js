@@ -20,7 +20,6 @@ import {
   DrawerItem,
 } from '@react-navigation/drawer';
 
-import SideScreen from './side';
 import Statistics from './statistics';
 import Login from './login';
 import CreateId from './createId';
@@ -41,6 +40,7 @@ import MapScreen from '../Map/map';
 
 import RecommendationQuestion from '../RecommendationPractice/RecommendationQuestion';
 
+LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
@@ -102,11 +102,10 @@ export default function Sidebar({ navigation }) {
   const navigationRef = useRef();
 
   const handleLogout = () => {
-    dispatch(setUserEmail(null));
+    dispatch(setUserEmail(''));
     dispatch(setLoggedIn(false));
     if (isWeb) {
       localStorage.removeItem('email');
-      console.log('머징');
     }
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
@@ -153,7 +152,7 @@ export default function Sidebar({ navigation }) {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen
-        name="HomeScreen"
+        name="한국사 에듀"
         component={HomeScreen}
         options={{
           drawerIcon: ({ focused, size }) => (

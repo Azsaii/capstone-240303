@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
+  LogBox
 } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -21,6 +22,8 @@ const Login = ({ navigation, onLogin }) => {
   const handleCreateId = () => {
     navigation.navigate('회원가입');
   };
+
+  LogBox.ignoreLogs(['Warning: ...']);
 
   const handleLogin = async () => {
     const auth = getAuth();
@@ -38,11 +41,10 @@ const Login = ({ navigation, onLogin }) => {
       }
 
       const userRef = doc(firestore, 'users', email);
+      
       getDoc(userRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          // 로그인 성공 시 홈스크린으로 이동
-          navigation.navigate('HomeScreen');
-        } else {
+        if (!docSnap.exists()) {
+          // 회원 데이터가 없는 경우
           console.error('User data not found in Firestore.');
         }
       });

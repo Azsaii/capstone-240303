@@ -4,7 +4,7 @@ import { createStore } from 'redux';
 // 초기 상태 정의
 const initialState = {
   isLoggedIn: false,
-  userEmail: null,
+  userEmail: '',
   isWeb: false,
 };
 

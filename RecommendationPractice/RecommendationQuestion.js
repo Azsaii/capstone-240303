@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,13 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  BackHandler,
-  LogBox,
+  Dimensions,
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
 import { useSelector } from 'react-redux';
 import Spinner from 'react-native-loading-spinner-overlay';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   container: {
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   moveButton: {
     padding: 10,
-    backgroundColor: '#ddd',
+    backgroundColor: '#978ff9',
     borderRadius: 5,
   },
   disabledButton: {
@@ -83,11 +83,14 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 5,
   },
+  spinnerTextStyle: {
+    color: '#FFF',
+  },
 });
 
 const RecommendationQuestion = () => {
   const [currentProblems, setCurrentProblems] = useState([]); // 현재 페이지에 표시될 문제들
-  const [currentIndex, setCurrentIndex] = useState(0); // 현재 시작 인덱스
+  const [currentIndex, setCurrentIndex] = useState(1); // 현재 시작 인덱스
   const [allProblems, setAllProblems] = useState([]); // 모든 문제 정보
   const [allAnswers, setAllAnswers] = useState([]); // 모든 답안 정보
 
@@ -96,6 +99,20 @@ const RecommendationQuestion = () => {
   const [answerShown, setAnswerShown] = useState([]); // 정답 보임 여부
   const [isLoading, setIsLoading] = useState(false); // 로딩 여부
   const userEmail = useSelector((state) => state.userEmail); // 유저 이메일
+
+  const scrollViewRef = useRef(); // 화면 최상단으로 이동시키기 위한 변수
+  const [imageSizes, setImageSizes] = useState({}); // 모든 카드의 이미지 크기를 저장할 객체
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // 페이지가 포커스 될 때 실행할 코드
+      setCurrentIndex(1);
+      if (allProblems.length !== 0 && allAnswers.length !== 0) {
+        fetchUserRelatedData();
+      }
+      scrollViewRef.current.scrollTo({ y: 0, animated: false }); // 화면 최상단으로 스크롤
+    }, [])
+  );
 
   // 배열 섞는 함수
   function shuffleArray(array) {
@@ -116,7 +133,8 @@ const RecommendationQuestion = () => {
 
   // 모든 문제, 정답 정보 가져오기
   const fetchProblemsAndAnswers = async () => {
-    setIsLoading(true);
+    setIsLoading(true); // 로딩 시작
+    console.log('--------------loading start 1------------------');
     let tempAllProblems = {};
     let tempAllAnswers = {};
 
@@ -142,10 +160,6 @@ const RecommendationQuestion = () => {
       tempAllAnswers[round] = roundAnswers;
     }
 
-    console.log('t1');
-    //console.log(tempAllProblems);
-    //aconsole.log(tempAllAnswers);
-
     setAllProblems(tempAllProblems);
     setAllAnswers(tempAllAnswers);
   };
@@ -156,60 +170,59 @@ const RecommendationQuestion = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchUserRelatedData = async () => {
-      // 유저 오답, 킬러문제, 북마크 문제 가져오기 및 섞기
-      const wrongProblemsRef = collection(
-        firestore,
-        `users/${userEmail}/wrongProblems`
-      );
-      const killerProblemsRef = collection(firestore, 'killer round');
-      const bookMarksRef = collection(firestore, `users/${userEmail}/bookMark`);
+  const fetchUserRelatedData = async () => {
+    setIsLoading(true); // 로딩 시작
+    console.log('--------------loading start 2------------------');
+    // 유저 오답, 킬러문제, 북마크 문제 가져오기 및 섞기
+    const wrongProblemsRef = collection(
+      firestore,
+      `users/${userEmail}/wrongProblems`
+    );
+    const killerProblemsRef = collection(firestore, 'killer round');
+    const bookMarksRef = collection(firestore, `users/${userEmail}/bookMark`);
 
-      const [a1, a2, a3] = await Promise.all([
-        fetchAndShuffle(wrongProblemsRef),
-        fetchAndShuffle(killerProblemsRef),
-        fetchAndShuffle(bookMarksRef),
-      ]);
+    const [a1, a2, a3] = await Promise.all([
+      fetchAndShuffle(wrongProblemsRef),
+      fetchAndShuffle(killerProblemsRef),
+      fetchAndShuffle(bookMarksRef),
+    ]);
 
-      // 각 추천문제 배열에 문제번호에 맞게 id, 문제 사진, 답 정보를 저장한다.
-      const indexRecommendProblems = [a1, a2, a3];
+    // 각 추천문제 배열에 문제번호에 맞게 id, 문제 사진, 답 정보를 저장한다.
+    const indexRecommendProblems = [a1, a2, a3];
 
-      // 배열 업데이트 함수
-      const updateArrayWithInfo = (array, allProblems, allAnswers) => {
-        return array.map((id) => {
-          const round = parseInt(id.toString().substring(0, 2), 10);
-          const img = allProblems[round] ? allProblems[round][id] : null;
-          const answer = allAnswers[round] ? allAnswers[round][id] : null;
-          if (img === null || answer === null) fetchProblemsAndAnswers();
-          return { id, img, answer };
-        });
-      };
-
-      // 상태 업데이트 공통 로직
-      const newRecommendProblems = indexRecommendProblems.map(
-        (array, index) => {
-          return updateArrayWithInfo(array, allProblems, allAnswers);
-        }
-      );
-
-      console.log('t2');
-      //console.log(newRecommendProblems);
-
-      setRecommendProblems(newRecommendProblems);
+    // 배열 업데이트 함수
+    const updateArrayWithInfo = (array, allProblems, allAnswers) => {
+      return array.map((id) => {
+        const round = parseInt(id.toString().substring(0, 2), 10);
+        const img = allProblems[round] ? allProblems[round][id] : null;
+        const answer = allAnswers[round] ? allAnswers[round][id] : null;
+        if (img === null || answer === null) fetchProblemsAndAnswers();
+        return { id, img, answer };
+      });
     };
+
+    // 상태 업데이트 공통 로직
+    const newRecommendProblems = indexRecommendProblems.map(
+      (array, index) => {
+        return updateArrayWithInfo(array, allProblems, allAnswers);
+      }
+    );
+
+    setRecommendProblems(newRecommendProblems);
+  };
+
+  useEffect(() => {
     if (allProblems.length !== 0 && allAnswers.length !== 0) {
-      console.log('test');
       fetchUserRelatedData();
     }
   }, [allProblems, allAnswers]);
 
   // 현재 인덱스가 변경되면 해당 인덱스부터 10개 문제를 보이게 한다.
   useEffect(() => {
-    console.log('ci: ' + currentIndex);
     if (recommendProblems.length === 0) return;
-    //console.log(recommendProblems);
-    console.log('t3');
+
+    setIsLoading(true); // 로딩 시작
+    console.log('--------------loading start 3------------------');
 
     let updArr = [];
     let ci = 0;
@@ -244,17 +257,33 @@ const RecommendationQuestion = () => {
     };
 
     updArr = updateArrayFromRecommend(recommendProblems, ci);
-    if (updArr[0].img === null) return;
-    setCurrentProblems(updArr); // 현재 문제 상태 업데이트
-    setIsLoading(false);
 
-    console.log(updArr);
-  }, [recommendProblems, currentIndex]); // currentIndex 의존성 추가
+    // updArr에 값이 성공적으로 할당되었는지 확인
+    if (updArr.length > 0 && updArr[0].img !== null) {
+      setCurrentProblems(updArr); // 현재 문제 상태 업데이트
+    }
+    setIsLoading(false); // 로딩 종료
+    console.log('--------------loading end----------------------');
+
+  }, [recommendProblems, currentIndex]);
 
   // 이전 / 다음 문제 10개 보여주기
   function handlelMove(state) {
     setCurrentIndex(currentIndex + state);
+    scrollViewRef.current.scrollTo({ y: 0, animated: false }); // 화면 최상단으로 스크롤
   }
+
+  // 동적 이미지 처리 함수
+  // 세로로 긴 이미지 처리에 필요하다.
+  const handleImageLoad = (id, event) => {
+    const { width, height } = event.nativeEvent.source;
+    const screenWidth = Dimensions.get('window').width;
+    const scaledHeight = (height / width) * screenWidth;
+    setImageSizes(prevSizes => ({
+      ...prevSizes,
+      [id]: { width: screenWidth, height: scaledHeight }
+    }));
+  };
 
   const renderItem = (item) => {
     if (typeof item === 'string') return;
@@ -286,43 +315,35 @@ const RecommendationQuestion = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            Alert.alert(
-              '문제',
-              '',
-              [
-                {
-                  text: '닫기',
-                  onPress: () => console.log('닫기 버튼이 눌렸습니다.'),
-                },
-              ],
-              { cancelable: true }
-            );
-          }}
-        >
+        <ScrollView>
           <Image
-            style={styles.problemImage}
+            style={{ width: '100%', height: imageSizes[item.id]?.height || 200 }} // 초기 높이는 200으로 설정, 이미지 로드 후 업데이트
             source={{ uri: item.img }}
             resizeMode="contain"
+            onLoad={(event) => handleImageLoad(item.id, event)}
           />
-        </TouchableOpacity>
+        </ScrollView>
+
         <View style={styles.line}></View>
       </View>
     );
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} ref={scrollViewRef}>
       {isLoading ? (
-        <Spinner />
+        <Spinner
+          visible={true}
+          textContent={'Loading...'}
+          textStyle={styles.spinnerTextStyle}
+        />
       ) : (
         <>
           <View style={styles.cardContainer}>
             {currentProblems.map((item) => renderItem(item))}
           </View>
           <View style={styles.moveButtonContainer}>
-            {currentIndex <= 1 ? (
+            {currentIndex === 1 ? (
               <View style={styles.disabledButton}>
                 <Text>이전</Text>
               </View>

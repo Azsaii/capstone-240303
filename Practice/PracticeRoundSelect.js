@@ -62,7 +62,7 @@ const PracticeRoundSelect = ({ navigation }) => {
       </Card.Content>
     </Card>
   );
-
+    // 네비게이트할 때 item 등의 직렬화 문제로 안되는거같음. 확인하기.
   return (
     <View style={styles.container}>
       <FlatList
