@@ -8,12 +8,11 @@ import {
   StyleSheet,
   Linking,
 } from 'react-native'; // StyleSheet import 추가
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
-import { setLoggedIn, setUserEmail, setIsWeb } from '../state';
 
 const currentDate = new Date();
-const testDate = new Date('2024-05-25');
+const testDate = new Date('2024-08-10');
 //const MainImage = 'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EC%9B%B9%EB%B0%B0%EA%B2%BD.png?alt=media&token=d57d8462-d4f1-43b6-a92e-968d30cb27f0'
 const imageurl =
   'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%EB%B0%B0%EA%B2%BD.webp?alt=media&token=cabac6ad-77a8-4c88-9366-a33cd01c5bf6';
@@ -32,8 +31,8 @@ const LinkButtonPressed = () => {
 const HomeScreen = ({ navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const isWeb = useSelector((state) => state.isWeb);
-  const dispatch = useDispatch();
+  const userName = useSelector((state) => state.userName);
+  
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -48,22 +47,8 @@ const HomeScreen = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const handleRefresh = () => {
-    window.location.reload(); // 화면 새로고침
-  };
-
-  const handleLogout = () => {
-    dispatch(setUserEmail(null));
-    dispatch(setLoggedIn(false));
-    if (isWeb) {
-      localStorage.removeItem('email');
-    }
-    handleRefresh();
-  };
-
   return (
     <>
-      {!isWeb && (
         <View style={[styles.container]}>
           <View style={styles.imagecontainer}>
             <Image source={{ uri: imageurl }} style={styles.image} />
@@ -72,7 +57,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.title}>한국사 능력 검정 시험</Text>
             <Text style={{ fontSize: 15 }}>
               {isLoggedIn ? <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-                {userEmail.split('@')[0] + ' 님, '}   
+                {userName}님,
               </Text>
                : <></>}
                 환영합니다.
@@ -142,7 +127,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-      )}
+      
     </>
   );
 };

@@ -11,7 +11,7 @@ import {
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore, auth } from '../firebaseConfig';
-import { setUserEmail, setLoggedIn, setIsWeb } from '../state';
+import { setUserEmail, setLoggedIn, setUserName } from '../state';
 import { useSelector, useDispatch } from 'react-redux';
 
 const Login = ({ navigation, onLogin }) => {
@@ -36,21 +36,19 @@ const Login = ({ navigation, onLogin }) => {
       const email = userCredential.user.email; // 로그인 성공 시 이메일 얻기
       dispatch(setUserEmail(email)); // 이메일 상태 업데이트
       dispatch(setLoggedIn(true)); // 로그인 상태 업데이트
-      if (isWeb == true) {
-        localStorage.setItem('email', email);
-      }
 
       const userRef = doc(firestore, 'users', email);
-      
-      getDoc(userRef).then((docSnap) => {
-        if (!docSnap.exists()) {
-          // 회원 데이터가 없는 경우
-          console.error('User data not found in Firestore.');
-        }
-      });
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        const userName = docSnap.data().name; // 문서에서 이름 필드 추출
+        dispatch(setUserName(userName)); // Redux store에 사용자 이름 저장
+      } else {
+        // 회원 데이터가 없는 경우
+        console.error('User data not found in Firestore.');
+      }
     } catch (error) {
       // 로그인 실패 시 처리
-      alert('로그인 실패. 아이디와 비밀번호를 확인하세요.');
+      Alert.alert('로그인 실패', '아이디와 비밀번호를 확인하세요.');
       console.error(error.message);
     }
   };

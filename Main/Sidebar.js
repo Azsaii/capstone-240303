@@ -73,7 +73,7 @@ const CustomDrawerContent = (props) => {
     <DrawerContentScrollView {...props}>
       <View style={{ alignItems: 'center', marginTop: 20 }}>
         <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10 }}>
-          로그인 정보
+          한국사 에듀
         </Text>
       </View>
       <DrawerItemList {...props} />
@@ -85,15 +85,7 @@ export default function Sidebar({ navigation }) {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const userAgent = navigator.userAgent || navigator.vendor;
   const isWeb = useSelector((state) => state.isWeb);
-
-  useEffect(() => {
-    dispatch(
-      // 앱/웹 구분
-      setIsWeb(Platform.OS === 'web')
-    );
-  }, []);
 
   const handleLogin = (email) => {
     dispatch(setUserEmail(email));
@@ -104,9 +96,7 @@ export default function Sidebar({ navigation }) {
   const handleLogout = () => {
     dispatch(setUserEmail(''));
     dispatch(setLoggedIn(false));
-    if (isWeb) {
-      localStorage.removeItem('email');
-    }
+
     if (navigationRef.current) {
       navigationRef.current.navigate('HomeScreen');
     }
@@ -119,9 +109,6 @@ export default function Sidebar({ navigation }) {
   }, [isLoggedIn]);
 
   const handleLogoutButtonPress = () => {
-    if (Platform.OS === 'web') {
-      handleLogout();
-    } else {
       Alert.alert(
         '로그아웃',
         '로그아웃 하시겠습니까?',
@@ -137,7 +124,6 @@ export default function Sidebar({ navigation }) {
         ],
         { cancelable: false }
       );
-    }
   };
 
   return (
