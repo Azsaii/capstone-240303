@@ -393,7 +393,6 @@ const styles = StyleSheet.create({
   },
   webBottomView: {
     width: '100%',
-    /* 필요한 다른 스타일 속성들 */
   },
 });
 
