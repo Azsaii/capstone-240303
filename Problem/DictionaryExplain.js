@@ -7,36 +7,66 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import RenderHtml from 'react-native-render-html';
-const { width } = Dimensions.get('window'); // 전체 디바이스 화면의 너비를 가져옵니다
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 function DictionaryExplain({ route }) {
-  const { eid } = route.params;
-  const [word, setWord] = useState(null);
-  const [body, setBody] = useState('');
+  const { eid, fromMap } = route.params;
+  const [content, setContent] = useState(null);
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    fetch('http://192.168.219.171:8080/character/' + eid) //home
-      //fetch('http://192.168.219.129:8080/character/' + eid) //school
-      //fetch('http://192.168.0.107:8080/character/' + eid) //school2
-      //fetch('http://10.138.17.218:8080/character/' + eid) //another
-      .then((response) => response.json())
-      .then((data) => {
-        setWord(data.article);
+    if (isFocused) {
+      fetch('http://192.168.219.110:8080/character/' + eid) //home
+        .then((response) => response.json())
+        .then((data) => {
+          setContent(data.article);
+          navigation.setOptions({
+            headerTitle: data.article.headword,
+            headerShown: true,
+          });
+        })
+        .catch((error) => console.error('Error:', error));
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity
+            style={{ marginLeft: 10 }}
+            onPress={() => {
+              if (fromMap) {
+                navigation.navigate('Dictionary');
+                navigation.navigate('사건지도');
+              } else {
+                navigation.navigate('Dictionary');
+              }
+            }}
+          >
+            <MaterialIcons name="arrow-back" size={30} color="black" />
+          </TouchableOpacity>
+        ),
+      });
+      const backAction = () => {
+        if (fromMap) {
+          navigation.navigate('Dictionary');
+          navigation.navigate('사건지도');
+        } else {
+          navigation.navigate('Dictionary');
+        }
+        return true;
+      };
 
-        const source = { html: data.article.body };
-        setBody(source);
-      })
-      .catch((error) => console.error('Error:', error));
-  }, []);
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
+      );
 
-  // const mixedContent = `
-  // # 개설\r\n
+      return () => backHandler.remove();
+    }
+  }, [isFocused, navigation]);
 
-  // ## This is a paragraph with **bold** markdown and a <b>bold</b> HTML tag.
-
-  // * Markdown list item
-  // `;
   const markdownToHtml = (markdown) => {
     return markdown
       .replace(/(#+) (.*?)(\r\n|$)/g, (_, hashes, content) => {
@@ -48,41 +78,54 @@ function DictionaryExplain({ route }) {
       .replace(/\[(.*?)\]\(.*?\)/g, '$1')
       .replace(/\n/g, '<br>'); // 줄바꿈 변환
   };
-  //const source = { html: markdownToHtml(mixedContent) };
 
   return (
     <View>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.outline}>
-          <Text>{word && word.headword}</Text>
-          <Text>{word && word.definition}</Text>
-          {word && (
-            <Image
-              key={word.headMedia.definition}
-              source={{
-                uri: word.headMedia.url,
-              }}
-              style={{ height: 200, aspectRatio: 1 }}
-              resizeMode="contain"
-            />
-          )}
-          {word && <Text>△ {word.headMedia.caption}</Text>}
-        </View>
-        <Text style={styles.BigText}>▣ 요약</Text>
-        <Text>{word && word.summary}</Text>
+        {content && (
+          <View>
+            <View style={styles.outline}>
+              {content.headMedia.url ? (
+                <Image
+                  key={content.headMedia.definition}
+                  source={{
+                    uri: content.headMedia.url,
+                  }}
+                  style={{ height: 200, aspectRatio: 1 }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View
+                  style={{
+                    height: 200,
+                    aspectRatio: 1,
+                    backgroundColor: '#e9e9e9',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text>이미지없음</Text>
+                </View>
+              )}
+              {content.headMedia.caption && (
+                <Text>△ {content.headMedia.caption}</Text>
+              )}
+            </View>
+            {content.definition && <Text style={styles.BigText}>▣ 정의</Text>}
+            <Text>{content.definition}</Text>
+            {content.summary && <Text style={styles.BigText}>▣ 요약</Text>}
 
-        {/* <RenderHtml contentWidth={320} source={source} /> */}
-        {word && (
-          <RenderHtml
-            contentWidth={320}
-            source={{ html: markdownToHtml(word.body) }}
-          />
+            <Text>{content && content.summary}</Text>
+
+            {content && (
+              <RenderHtml
+                contentWidth={320}
+                source={{ html: markdownToHtml(content.body) }}
+              />
+            )}
+          </View>
         )}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.BigText}>관련문제</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
@@ -95,20 +138,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   outline: {
+    paddingTop: '4%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  buttonContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  button: {
-    backgroundColor: 'orange',
-    borderRadius: 5,
   },
   BigText: {
     fontSize: 28, // 큰 글씨 크기
     fontWeight: 'bold', // 굵은 글씨
+    paddingTop: '6%',
   },
 });
 

@@ -16,13 +16,19 @@ export default function AnswerModal({ isOpen, onClose, problem, answer }) {
       style={{ margin: 0 }}
     >
       <View style={styles.modalView}>
-        <Text>{problem}</Text>
+        <Text>
+          한국사 능력 검정 시험 {Math.floor(parseInt(problem) / 100)}회{' '}
+          {parseInt(problem) % 100}번
+        </Text>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {answer === null ? (
             <Text>데이터 로드중</Text>
           ) : (
             <View>
-              <Text>정답 : {answer.answer}번</Text>
+              <Text>
+                {'\n'}정답 :{' '}
+                <Text style={{ color: 'red' }}>{answer.answer}번</Text>
+              </Text>
               <Text
                 style={{ borderBottomWidth: 1, borderBottomColor: 'black' }}
               >

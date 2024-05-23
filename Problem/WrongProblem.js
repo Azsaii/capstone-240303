@@ -26,16 +26,18 @@ const Stack = createStackNavigator();
 
 function WrongProblem({ userEmail }) {
   return (
-    <Stack.Navigator
-      initialRouteName="WrongProblemTab"
-      screenOptions={{ headerShown: false }}
-    >
+    <Stack.Navigator initialRouteName="WrongProblemTab">
       <Stack.Screen
         name={userEmail}
         component={WrongProblemTab}
         initialParams={{ userEmail: userEmail }}
+        options={{ headerTitle: '다시풀기', headerTitleAlign: 'center' }}
       />
-      <Stack.Screen name="BasicProblem" component={BasicProblem} />
+      <Stack.Screen
+        name="BasicProblem"
+        component={BasicProblem}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -116,7 +118,10 @@ function RedoProblemScreen({ userEmail, collectionName }) {
       <View style={styles.cell}>
         {!showDeleteButton && (
           <TouchableOpacity onPress={handlePress}>
-            <Text style={styles.name}>{item.id}</Text>
+            <Text style={styles.name}>
+              한국사 능력 검정 시험 {Math.floor(parseInt(item.id) / 100)}회{' '}
+              {parseInt(item.id) % 100}번
+            </Text>
           </TouchableOpacity>
         )}
         {showDeleteButton && (
@@ -128,7 +133,10 @@ function RedoProblemScreen({ userEmail, collectionName }) {
               justifyContent: 'space-between',
             }}
           >
-            <Text style={styles.name}>{item.id} </Text>
+            <Text style={styles.name}>
+              한국사 능력 검정 시험 {Math.floor(parseInt(item.id) / 100)}회{' '}
+              {parseInt(item.id) % 100}번
+            </Text>
             <Feather name="x-square" size={24} color="red" />
           </TouchableOpacity>
         )}
@@ -163,7 +171,6 @@ function ItemDeleteModal({ isOpen, onClose, problemId, handleDelete }) {
       isVisible={isOpen}
       onRequestClose={() => onClose()}
       onBackdropPress={() => onClose()}
-      style={{ margin: 0 }}
     >
       <View style={styles.deleteModalView}>
         <Text style={{ fontSize: 25 }}>
@@ -190,48 +197,6 @@ function ItemDeleteModal({ isOpen, onClose, problemId, handleDelete }) {
   );
 }
 
-function BookMarkScreen({ userEmail }) {
-  const [data, setData] = useState([]);
-  const navigation = useNavigation();
-  useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDocs(
-        collection(firestore, 'users', userEmail, 'bookMark')
-      );
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setData(fetchedData);
-    };
-
-    fetchData();
-  }, []);
-
-  const renderItem = ({ item }) => {
-    const handlePress = () => {
-      navigation.navigate('BasicProblem', { problemId: item.id });
-    };
-
-    return (
-      <View style={styles.cell}>
-        <TouchableOpacity onPress={handlePress}>
-          <Text style={styles.name}>{item.id}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => String(item.id)}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -255,12 +220,12 @@ const styles = StyleSheet.create({
   },
   deleteModalView: {
     flex: 1,
-    marginTop: '75%',
-    margin: 30,
-    marginBottom: '80%',
+    marginTop: '70%',
+    margin: '5%',
+    marginBottom: '70%',
     backgroundColor: 'white',
     borderRadius: 10,
-    padding: 20,
+    padding: '5%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -268,11 +233,14 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     borderWidth: 2,
     borderColor: 'gray',
+    padding: '2%',
+    marginRight: '2%',
   },
   deleteButton: {
     borderRadius: 9,
     borderWidth: 2,
     borderColor: 'red',
+    padding: '2%',
   },
 });
 

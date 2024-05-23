@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
   Text,
@@ -13,7 +12,6 @@ import {
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { SelectList } from 'react-native-dropdown-select-list';
 import {
-  getFirestore,
   doc,
   getDoc,
   setDoc,
@@ -22,12 +20,12 @@ import {
   query,
   where,
   getDocs,
-  collectionGroup,
 } from 'firebase/firestore';
 import React, { useState, useEffect, useRef } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import AnswerModal from './AnswerModal';
 import { firestore } from '../firebaseConfig';
-import { Button } from 'react-native-elements';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   //const { param } = route.params;
@@ -44,7 +42,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   const [isScrollButton, setIsScrollButton] = useState(false);
   const scrollViewRef = useRef(null);
   const [scrollIntervalId, setScrollIntervalId] = useState(null);
-
+  const isFocused = useIsFocused();
   const openModal = () => {
     setModalOpen(true);
     getAnswer();
@@ -223,6 +221,11 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
     changeData(param === 'era' ? '전삼국' : '사건');
   }, []); //컴포넌트가 마운트될 때만 실행
 
+  useEffect(() => {
+    if (isLoggedIn && problems.length > 0)
+      getBookMark(problems[problemCount - 1].data().id);
+  }, [isFocused]);
+
   //좌우 화면 슬라이드로 문제 넘기기
   const [panX] = useState(new Animated.Value(0));
 
@@ -324,47 +327,56 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
             }}
             data={selectlistData}
             save="value"
-            placeholder={param === 'era' ? '시대 설정' : '타입 설정'}
+            placeholder={param === 'era' ? '전삼국' : '사건'}
             boxStyles={{ width: 300, marginRight: 15 }}
           />
-          {isLoggedIn && (
-            <TouchableOpacity onPress={handleBookMark}>
-              {bookMarkStar ? (
-                <AntDesign name="star" size={24} color="yellow" />
-              ) : (
-                <AntDesign name="staro" size={24} color="black" />
-              )}
-            </TouchableOpacity>
-          )}
         </View>
-        <Animated.View
-          style={[styles.content, animatedStyle]}
-          {...panResponder.panHandlers}
-        >
-          <View style={styles.problemInfo}>
-            <Text style={{ paddingRight: 20 }}>
-              한국사 능력 검정 시험 {Math.floor(parseInt(displayProblem) / 100)}
-              회 {parseInt(displayProblem) % 100}번
-            </Text>
-            <TouchableOpacity style={styles.answerButton} onPress={openModal}>
-              <Text>정답보기</Text>
-            </TouchableOpacity>
-          </View>
-          {imageUrl && (
-            <Image
-              key={imageUrl}
-              source={{
-                uri: imageUrl,
-              }}
-              style={{
-                width: '100%',
-                height: undefined,
-                aspectRatio: imageAspectRatio,
-              }}
-              resizeMode="contain"
-            />
-          )}
-        </Animated.View>
+        {displayProblem ? (
+          <Animated.View
+            style={[styles.content, animatedStyle]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.problemInfo}>
+              <Text style={{ paddingRight: 20 }}>
+                한국사 능력 검정 시험{' '}
+                {Math.floor(parseInt(displayProblem) / 100)}회{' '}
+                {parseInt(displayProblem) % 100}번
+              </Text>
+              <TouchableOpacity style={styles.answerButton} onPress={openModal}>
+                <Text>정답보기</Text>
+              </TouchableOpacity>
+              {isLoggedIn && (
+                <TouchableOpacity onPress={handleBookMark}>
+                  {bookMarkStar ? (
+                    <AntDesign name="star" size={24} color="yellow" />
+                  ) : (
+                    <AntDesign name="staro" size={24} color="black" />
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+            {imageUrl && (
+              <Image
+                key={imageUrl}
+                source={{
+                  uri: imageUrl,
+                }}
+                style={{
+                  width: '100%',
+                  height: undefined,
+                  aspectRatio: imageAspectRatio,
+                }}
+                resizeMode="contain"
+              />
+            )}
+          </Animated.View>
+        ) : (
+          <Spinner
+            visible={true}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
+          />
+        )}
         <AnswerModal
           isOpen={isModalOpen}
           onClose={closeModal}
@@ -387,12 +399,20 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       </View>
       {isScrollButton && (
         <View style={styles.scrollButtonsContainer}>
-          <Button
-            title="△"
+          <TouchableOpacity
             onPressIn={() => upScrolling()}
             onPressOut={stopScrolling}
-          />
-          <Button title="▽" onPressIn={() => downScrolling()} />
+          >
+            <AntDesign name="upcircle" size={36} color="orange" />
+          </TouchableOpacity>
+          <TouchableOpacity onPressIn={() => downScrolling()}>
+            <AntDesign
+              name="downcircle"
+              size={36}
+              color="orange"
+              style={{ marginTop: 10 }}
+            />
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -426,9 +446,12 @@ const styles = StyleSheet.create({
   },
   scrollButtonsContainer: {
     position: 'absolute', // 위치를 절대적으로 설정
-    bottom: 10, // 화면 하단에 위치
-    right: 10,
+    bottom: 20, // 화면 하단에 위치
+    right: 20,
     backgroundColor: 'transparent', // 배경색 투명
     zIndex: 1, // 다른 뷰들 위에 떠 있게 설정
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
   },
 });
