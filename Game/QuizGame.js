@@ -212,7 +212,7 @@ const QuizGame = ({ navigation }) => {
       const buttons = [
         {
           text: '나가기',
-          onPress: () => navigation.navigate('Sidebar'),
+          onPress: () => navigation.goBack(),
         },
       ];
 
@@ -271,7 +271,6 @@ const QuizGame = ({ navigation }) => {
             if (unsolved.length > 0) {
               navigation.navigate('UnsolvedScreen', { unsolved });
             } else {
-              //navigation.navigate('Sidebar');
               navigation.goBack();
             }
           }
