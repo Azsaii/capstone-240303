@@ -21,7 +21,8 @@ function DictionaryExplain({ route }) {
 
   useEffect(() => {
     if (isFocused) {
-      fetch('http://192.168.219.110:8080/character/' + eid) //home
+      // fetch('http://192.168.219.110:8080/character/' + eid) //home
+      fetch('http://10.138.17.218:8080/character/' + eid) //home
         .then((response) => response.json())
         .then((data) => {
           setContent(data.article);
@@ -42,6 +43,7 @@ function DictionaryExplain({ route }) {
               } else {
                 navigation.navigate('Dictionary');
               }
+              // navigation.navigate('Dictionary', { fromMap: fromMap });
             }}
           >
             <MaterialIcons name="arrow-back" size={30} color="black" />
@@ -67,16 +69,48 @@ function DictionaryExplain({ route }) {
     }
   }, [isFocused, navigation]);
 
+  // const markdownToHtml = (markdown) => {
+  //   // 순수 HTML 테이블이 포함된 부분을 감지하여 변환하지 않도록
+  //   return markdown
+  //     .replace(/<table[\s\S]*?<\/table>/g, (match) => match)
+  //     .replace(/(#+) (.*?)(\r\n|$)/g, (_, hashes, content) => {
+  //       const level = hashes.length; // 제목의 레벨을 결정 (h1, h2, h3, ...)
+  //       return `<h${level} style="width:90%; margin-bottom: 2em;">▣ ${content}</h${level}>`;
+  //     })
+  //     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  //     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+  //     .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+  //     .replace(/\n/g, '<br style="margin-bottom: 2em;">'); // 줄바꿈 변환 및 스타일 적용
+  // };
   const markdownToHtml = (markdown) => {
-    return markdown
+    // 태그와 스타일 사이에 공백을 허용하는 정규식
+    const tableRegex = /<table[\s\S]*?<\/table>/gi;
+
+    // HTML 블록을 분리
+    const htmlBlocks = [];
+    const separatedMarkdown = markdown.replace(tableRegex, (match) => {
+      htmlBlocks.push(match);
+      return `<!--HTML_BLOCK_${htmlBlocks.length - 1}-->`;
+    });
+
+    // 나머지 마크다운을 변환
+    const convertedMarkdown = separatedMarkdown
       .replace(/(#+) (.*?)(\r\n|$)/g, (_, hashes, content) => {
         const level = hashes.length; // 제목의 레벨을 결정 (h1, h2, h3, ...)
-        return `<h${level}>▣ ${content}</h${level}>`;
+        return `<h${level} style="width:90%; margin-bottom: 2em;">▣ ${content}</h${level}>`;
       })
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-      .replace(/\n/g, '<br>'); // 줄바꿈 변환
+      .replace(/\n/g, '<br style="margin-bottom: 2em;">'); // 줄바꿈 변환 및 스타일 적용
+
+    // HTML 블록을 다시 삽입
+    const finalHtml = convertedMarkdown.replace(
+      /<!--HTML_BLOCK_(\d+)-->/g,
+      (_, index) => htmlBlocks[parseInt(index)]
+    );
+
+    return finalHtml;
   };
 
   return (
