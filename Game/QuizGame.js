@@ -107,7 +107,6 @@ const QuizGame = ({ navigation }) => {
   );
   const [unsolved, setUnsolved] = useState([]); // 넘긴 문제 저장
   const [solveCount, setSolveCount] = useState(0); // 문제 수 카운트
-  const [isKeywordUpdated, setIsKeywordUpdated] = useState(false);
   const isWeb = useSelector((state) => state.isWeb);
 
   const backgroundColor = useState(new Animated.Value(0))[0]; // 오답 시 깜빡임
@@ -115,18 +114,10 @@ const QuizGame = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       // 페이지가 포커스 될 때 실행할 코드
-      setKeywords([]);
-
-      setCurrentKeyword();
-      setKeypadKeywords([]);
-
-      setGuessCount(0);
+      fetchExamRounds(); // 키워드 가져오기
       setCurrentIndex(0);
-      setRandomIndexList([]);
-
       setUnsolved([]);
       setSolveCount(0);
-      setIsKeywordUpdated(false);
     }, [])
   );
 
@@ -162,23 +153,24 @@ const QuizGame = ({ navigation }) => {
   });
 
   // 키워드 가져오기
+  const fetchExamRounds = async () => {
+    try {
+      setIsLoading(true);
+      const list = [];
+      const keywordCollection = collection(firestore, 'keyword');
+      const keywordSnapshot = await getDocs(keywordCollection);
+      keywordSnapshot.forEach((doc) => {
+        list.push({ data: doc.data() });
+      });
+      setKeywords(list);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error fetching data: ', err);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchExamRounds = async () => {
-      try {
-        setIsLoading(true);
-        const list = [];
-        const keywordCollection = collection(firestore, 'keyword');
-        const keywordSnapshot = await getDocs(keywordCollection);
-        keywordSnapshot.forEach((doc) => {
-          list.push({ data: doc.data() });
-        });
-        setKeywords(list);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching data: ', err);
-        setIsLoading(false);
-      }
-    };
     fetchExamRounds();
   }, []);
 
@@ -194,18 +186,11 @@ const QuizGame = ({ navigation }) => {
 
   // 문제 섞은 후 처음 문제 뽑기
   useEffect(() => {
-    if (isKeywordUpdated || keywords.length === 0) return;
-    setIsKeywordUpdated(true);
+    if (keywords.length === 0) return;
     const randomList = fillRandomArray(keywords.length); // 랜덤 인덱스
-    setRandomIndexList(randomList); // 상태 업데이트
-    console.log('randomList: ' + randomList);
-    const rearrangedKeywords = randomList.map((index) => keywords[index]);
-    console.log('rearrangedKeywords: ');
-    console.log(rearrangedKeywords);
-    setKeywords(rearrangedKeywords); // 재배열된 keywords로 상태 업데이트
-
+    setRandomIndexList(randomList);
     setCurrentKeyword(keywords[randomList[currentIndex]]);
-  }, [keywords, isKeywordUpdated]);
+  }, [keywords]);
 
   // 현재 키워드, 키패드 세팅
   // 3. 문제 업데이트 시 키패드 업데이트
@@ -387,10 +372,10 @@ const QuizGame = ({ navigation }) => {
   // 넘기기 버튼 클릭 시
   const handleNextButton = () => {
     // 현재 문제를 미해결 문제 리스트에 추가
-    console.log('currenIndex: ' + currentIndex);
-    console.log('unsolved: ');
-    console.log(unsolved);
-    setUnsolved((prevUnsolved) => [...prevUnsolved, keywords[currentIndex]]);
+    setUnsolved((prevUnsolved) => [
+      ...prevUnsolved,
+      keywords[randomIndexList[currentIndex]],
+    ]);
     // 다음 문제로 이동
     setCurrentIndex(currentIndex + 1);
     // guess 초기화
