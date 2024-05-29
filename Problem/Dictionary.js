@@ -59,17 +59,19 @@ function DictionaryTab() {
   const isFocused = useIsFocused();
   const navigation = useNavigation();
   useEffect(() => {
-    const backAction = () => {
-      navigation.goBack();
-      return true;
-    };
+    if (isFocused) {
+      const backAction = () => {
+        navigation.navigate('한국사 에듀');
+        return true;
+      };
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
+      );
 
-    return () => backHandler.remove();
+      return () => backHandler.remove();
+    }
   }, [isFocused]);
   return (
     <Tab.Navigator initialRouteName="인물">
