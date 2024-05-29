@@ -10,16 +10,15 @@ import {
 } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore, auth } from '../firebaseConfig';
+import { firestore } from '../firebaseConfig';
 import { setUserEmail, setLoggedIn, setUserName } from '../state';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const Login = ({ navigation, onLogin }) => {
   const dispatch = useDispatch();
   const [emailInput, setEmailInput] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const isWeb = useSelector((state) => state.isWeb);
   const handleCreateId = () => {
     navigation.navigate('회원가입');
   };
@@ -61,7 +60,7 @@ const Login = ({ navigation, onLogin }) => {
       }} // 배경 이미지 파일 경로를 설정하세요
       style={styles.background}
     >
-      <View style={isWeb ? styles.WebContainer : styles.container}>
+      <View style={styles.container}>
         <Text style={styles.title}>로그인</Text>
         <TextInput
           style={styles.input}
@@ -139,16 +138,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-  },
-
-  WebContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    maxWidth: 500, // 웹 버전에서 최대 너비 설정
-    width: '100%',
-    margin: 'auto', // 화면 중앙 정렬
   },
 });
 
