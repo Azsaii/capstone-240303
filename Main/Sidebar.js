@@ -472,7 +472,6 @@ export default function Sidebar({ navigation }) {
         name="게시판"
         component={BoardScreen}
         options={{
-          headerShown: false,
           drawerIcon: ({ focused, size }) => (
             <MaterialIcons name="speaker-notes" size={19} color="black" />
           ),

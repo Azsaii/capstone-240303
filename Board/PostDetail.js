@@ -12,10 +12,9 @@ import {
   BackHandler,
 } from 'react-native';
 import { TextInput, Card } from 'react-native-paper';
-import { database } from '../firebaseConfig';
-import { ref, set, remove, onValue, off } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import axios from 'axios';
+import RenderHTML from 'react-native-render-html';
 
 const styles = StyleSheet.create({
   container: {
@@ -48,7 +47,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    padding: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: 'white',
+    borderRadius: 10,
   },
   button: {
     margin: 5,
@@ -62,8 +64,8 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     backgroundColor: '#dfe9f5',
-    minHeight: 405,
-    borderRadius: 20,
+    minHeight: 200,
+    borderRadius: 10,
   },
   writeButton: {
     width: 50,
@@ -80,6 +82,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 10,
+    marginBottom: 10,
   },
   commentInput: {
     flex: 1,
@@ -117,9 +120,29 @@ const PostDetail = ({ route, navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
-  const serverPath = 'http://192.168.0.5:8080/';
+  const serverPath = 'http://192.168.0.3:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
-  
+
+  // 작성 시각 변환기
+  function formatDate(date) {
+    const options = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    };
+    const formattedDate = new Intl.DateTimeFormat('ko-KR', options).format(
+      date
+    );
+    return formattedDate
+      .replace(/\. /g, '-')
+      .replace(/\./g, '')
+      .replace(/, /g, ' ');
+  }
+
   // 뒤로가기 시 게시판으로 이동
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -150,12 +173,14 @@ const PostDetail = ({ route, navigation }) => {
         const data = response.data;
         if (data) {
           const comments = Object.keys(data).map((key) => ({
+            id: data[key].id,
             commentId: data[key].commentId,
             userEmail: data[key].userEmail,
             comment: data[key].comment,
           }));
           setCommentList(comments);
         }
+        console.log('comment fetch!!!!!');
       })
       .catch((error) => {
         console.error('Comments data could not be fetched.' + error);
@@ -204,6 +229,17 @@ const PostDetail = ({ route, navigation }) => {
       // 댓글 내용이 없으면 저장하지 않음
       return;
     }
+    // comment의 길이가 5000자를 초과하는지 확인
+    if (comment.length > 500) {
+      Alert.alert(
+        '경고', // 경고 제목
+        '댓글은 최대 500자 입니다.',
+        [
+          { text: '확인', onPress: () => console.log('OK Pressed') }, // 확인 버튼
+        ]
+      );
+      return;
+    }
     const commentId = userName + '_' + Date.now();
 
     // post와 post.id가 존재하는지 확인
@@ -249,6 +285,7 @@ const PostDetail = ({ route, navigation }) => {
       .delete(serverPath + url)
       .then(() => {
         console.log('Data removed successfully.');
+        fetchComments(); // 삭제 후 댓글을 다시 불러옴
       })
       .catch((error) => {
         console.error('Data could not be removed.' + error);
@@ -258,13 +295,13 @@ const PostDetail = ({ route, navigation }) => {
   // 삭제 확인 창
   const removeProcess = (url) => {
     if (isWeb) {
-      const userConfirmed = window.confirm(
-        '삭제 확인',
-        '정말로 삭제하시겠습니까?'
-      );
-      if (userConfirmed) {
-        removeData(url);
-      }
+      // const userConfirmed = window.confirm(
+      //   '삭제 확인',
+      //   '정말로 삭제하시겠습니까?'
+      // );
+      // if (userConfirmed) {
+      //   removeData(url);
+      // }
     } else {
       Alert.alert('삭제 확인', '정말로 삭제하시겠습니까?', [
         {
@@ -276,6 +313,9 @@ const PostDetail = ({ route, navigation }) => {
           text: '확인',
           onPress: () => {
             removeData(url);
+            if (url.includes('posts')) {
+              navigation.navigate('BoardScreen');
+            }
           },
         },
       ]);
@@ -284,16 +324,15 @@ const PostDetail = ({ route, navigation }) => {
 
   // 글 삭제
   const handleDelete = () => {
-    console.log('id = ' + post.postId);
-    const url = 'posts/' + post.postId;
+    console.log('id = ' + post.id);
+    const url = 'posts/' + post.id;
     removeProcess(url);
   };
 
   // 댓글 삭제
-  const handleCommentDelete = (commentId) => {
-    const url = 'comments/' + commentId;
+  const handleCommentDelete = (id) => {
+    const url = 'comments/' + id;
     removeProcess(url);
-    fetchComments(); // 삭제 후 댓글을 다시 불러옴
   };
 
   // 데이터 삭제 요청
@@ -350,22 +389,28 @@ const PostDetail = ({ route, navigation }) => {
   // };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
-      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="always"
+      >
         <View style={styles.content}>
-          {isWeb && (
+          {/* {isWeb && (
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Icon name="arrow-u-left-top" size={30} color="#000" />
             </TouchableOpacity>
-          )}
+          )} */}
           <Text style={styles.title}>{post.title}</Text>
           <View style={styles.idRow}>
-            <Text style={{ fontSize: 15 }}>
-              작성자: {post ? post.userEmail.split('_')[0] : ''}
-            </Text>
+            <View>
+              <Text style={{ fontSize: 15 }}>
+                작성자: {post ? post.userEmail.split('@')[0] : ''}
+              </Text>
+              <Text style={{ fontSize: 15 }}>
+                작성일: {post ? formatDate(post.postId.split('_')[1]) : ''}
+              </Text>
+            </View>
 
             <View style={styles.buttonRow}>
               {userEmail === post.userEmail ? (
@@ -386,7 +431,9 @@ const PostDetail = ({ route, navigation }) => {
               ) : null}
             </View>
           </View>
-          <Text style={styles.contentText}>{post.body}</Text>
+          <View style={styles.contentText}>
+            <RenderHTML source={{ html: post.body }} />
+          </View>
         </View>
 
         {commentList.length > 0 && <View style={styles.line} />}
@@ -396,7 +443,7 @@ const PostDetail = ({ route, navigation }) => {
             <Card key={index} style={styles.card}>
               <Card.Content>
                 <View style={styles.commentRow}>
-                  <View>
+                  <View style={{ width: '85%' }}>
                     <Text style={{ fontSize: 12 }}>
                       {item.userEmail.split('@')[0]}
                     </Text>
@@ -405,7 +452,7 @@ const PostDetail = ({ route, navigation }) => {
                   {userEmail === item.userEmail ? (
                     <TouchableOpacity
                       style={[styles.commentDeleteButton]}
-                      onPress={() => handleCommentDelete(item.commentId)}
+                      onPress={() => handleCommentDelete(item.id)}
                     >
                       <Text style={styles.buttonText}>삭제</Text>
                     </TouchableOpacity>
@@ -427,7 +474,15 @@ const PostDetail = ({ route, navigation }) => {
             value={comment}
             editable={isLoggedIn}
           />
-          <TouchableOpacity style={styles.writeButton} onPress={handleSubmit}>
+          <TouchableOpacity
+            style={styles.writeButton}
+            onPress={() => {
+              isLoggedIn
+                ? // 글 작성 페이지로 이동
+                  handleSubmit()
+                : navigation.navigate('Login');
+            }}
+          >
             <Icon name="comment" size={24} color="#35439c" />
           </TouchableOpacity>
         </View>

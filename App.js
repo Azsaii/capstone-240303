@@ -17,6 +17,7 @@ import HomeScreen from './Main/HomeScreen';
 
 // 게시판
 import BoardScreen from './Board/BoardScreen';
+import BoardScreenUI from './Board/BoardScreenUI';
 
 // 기출 문제
 import PracticeRoundSelect from './Practice/PracticeRoundSelect';
@@ -98,7 +99,7 @@ const App = () => {
     //console.error("강제로 에러를 만듭니다 !");
     LogBox.ignoreAllLogs(); // 모든 경고, 에러 로그박스 제거
     //LogBox.ignoreLogs(['Warning: ...']);
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (isWeb) {

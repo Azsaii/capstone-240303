@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-  LogBox
+  LogBox,
 } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -43,6 +43,7 @@ const Login = ({ navigation, onLogin }) => {
         const userName = docSnap.data().name; // 문서에서 이름 필드 추출
         dispatch(setUserName(userName)); // Redux store에 사용자 이름 저장
         setErrorMessage('');
+        navigation.goBack();
       } else {
         // 회원 데이터가 없는 경우
         setErrorMessage('이메일과 비밀번호를 확인하세요.');
