@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Alert, Animated } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#bbd2ec',
   },
   timer: {
     position: 'absolute',
@@ -101,6 +100,23 @@ const QuizGame = ({ navigation }) => {
   const [unsolved, setUnsolved] = useState([]); // 넘긴 문제 저장
   const [solveCount, setSolveCount] = useState(0); // 문제 수 카운트
   const isWeb = useSelector((state) => state.isWeb);
+
+  const backgroundColor = useState(new Animated.Value(0))[0]; // Animated value
+
+  // 깜빡임 효과 함수
+  const blinkEffect = () => {
+    Animated.sequence([
+      Animated.timing(backgroundColor, { toValue: 1, duration: 100, useNativeDriver: false }),
+      Animated.timing(backgroundColor, { toValue: 0, duration: 100, useNativeDriver: false }),
+      Animated.timing(backgroundColor, { toValue: 1, duration: 100, useNativeDriver: false }),
+      Animated.timing(backgroundColor, { toValue: 0, duration: 100, useNativeDriver: false })
+    ]).start();
+  };
+
+  const interpolatedColor = backgroundColor.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#bbd2ec', '#db4455'] // 기본 색상과 깜빡일 색상
+  });
 
   // 키워드 가져오기
   useEffect(() => {
@@ -196,6 +212,9 @@ const QuizGame = ({ navigation }) => {
         setCurrentIndex(currentIndex + 1);
         setScore(score + 1); // 스코어 추가
         setSolveCount(solveCount + 1); // 문제 수 카운트
+      } else {
+        // 정답이 아닐 경우 깜빡임 효과
+        blinkEffect();
       }
       // guess 초기화
       setGuess(
@@ -351,7 +370,7 @@ const QuizGame = ({ navigation }) => {
   ));
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { backgroundColor: interpolatedColor }]}>
       {isLoading ? (
         <Spinner
           visible={true}
@@ -392,7 +411,7 @@ const QuizGame = ({ navigation }) => {
           <View style={styles.keypad}>{buttons}</View>
         </>
       )}
-    </View>
+    </Animated.View>
   );
 };
 export default QuizGame;
