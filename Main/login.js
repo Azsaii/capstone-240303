@@ -10,15 +10,15 @@ import {
 } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore, auth } from '../firebaseConfig';
+import { firestore } from '../firebaseConfig';
 import { setUserEmail, setLoggedIn, setUserName } from '../state';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const Login = ({ navigation, onLogin }) => {
   const dispatch = useDispatch();
   const [emailInput, setEmailInput] = useState('');
   const [password, setPassword] = useState('');
-  const isWeb = useSelector((state) => state.isWeb);
+  const [errorMessage, setErrorMessage] = useState('');
   const handleCreateId = () => {
     navigation.navigate('회원가입');
   };
@@ -42,14 +42,14 @@ const Login = ({ navigation, onLogin }) => {
       if (docSnap.exists()) {
         const userName = docSnap.data().name; // 문서에서 이름 필드 추출
         dispatch(setUserName(userName)); // Redux store에 사용자 이름 저장
+        setErrorMessage('');
       } else {
         // 회원 데이터가 없는 경우
-        console.error('User data not found in Firestore.');
+        setErrorMessage('이메일과 비밀번호를 확인하세요.');
       }
     } catch (error) {
       // 로그인 실패 시 처리
-      Alert.alert('로그인 실패', '아이디와 비밀번호를 확인하세요.');
-      console.error(error.message);
+      setErrorMessage('이메일과 비밀번호를 확인하세요.');
     }
   };
 
@@ -60,7 +60,7 @@ const Login = ({ navigation, onLogin }) => {
       }} // 배경 이미지 파일 경로를 설정하세요
       style={styles.background}
     >
-      <View style={isWeb ? styles.WebContainer : styles.container}>
+      <View style={styles.container}>
         <Text style={styles.title}>로그인</Text>
         <TextInput
           style={styles.input}
@@ -75,6 +75,9 @@ const Login = ({ navigation, onLogin }) => {
           value={password}
           onChangeText={(text) => setPassword(text)}
         />
+        {errorMessage ? ( // Conditional rendering of the error message
+          <Text style={{ color: 'red', marginBottom: 10 }}>{errorMessage}</Text>
+        ) : null}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>로그인</Text>
@@ -135,16 +138,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-  },
-
-  WebContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    maxWidth: 500, // 웹 버전에서 최대 너비 설정
-    width: '100%',
-    margin: 'auto', // 화면 중앙 정렬
   },
 });
 
