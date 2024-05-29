@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
 const UnsolvedScreen = ({ route, navigation }) => {
   const { unsolved } = route.params;
 
+  console.log('unsolved: ');
+  console.log(unsolved);
+
   // 뒤로가기 시 메인화면으로 이동
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -54,6 +57,7 @@ const UnsolvedScreen = ({ route, navigation }) => {
   }, []);
 
   const renderItem = ({ item }) => {
+    if (!item) return null;
     return (
       <Card style={styles.card}>
         <View style={styles.era}>
@@ -78,7 +82,6 @@ const UnsolvedScreen = ({ route, navigation }) => {
         <FlatList
           data={unsolved}
           renderItem={renderItem}
-          keyExtractor={(item) => item.data.keyword}
           contentContainerStyle={{ paddingBottom: 50 }}
         />
       </View>

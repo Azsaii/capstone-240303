@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Alert, Animated } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Alert,
+  Animated,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
@@ -39,9 +46,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   explanation: {
-    flex: 1.2,
+    flex: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
+    margin: 10,
   },
   keypad: {
     flex: 3,
@@ -59,7 +67,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   buttonText: {
-    fontSize: 30,
+    fontSize: 25,
     textAlign: 'center',
   },
   line: {
@@ -99,23 +107,58 @@ const QuizGame = ({ navigation }) => {
   );
   const [unsolved, setUnsolved] = useState([]); // 넘긴 문제 저장
   const [solveCount, setSolveCount] = useState(0); // 문제 수 카운트
+  const [isKeywordUpdated, setIsKeywordUpdated] = useState(false);
   const isWeb = useSelector((state) => state.isWeb);
 
-  const backgroundColor = useState(new Animated.Value(0))[0]; // Animated value
+  const backgroundColor = useState(new Animated.Value(0))[0]; // 오답 시 깜빡임
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // 페이지가 포커스 될 때 실행할 코드
+      setKeywords([]);
+
+      setCurrentKeyword();
+      setKeypadKeywords([]);
+
+      setGuessCount(0);
+      setCurrentIndex(0);
+      setRandomIndexList([]);
+
+      setUnsolved([]);
+      setSolveCount(0);
+      setIsKeywordUpdated(false);
+    }, [])
+  );
 
   // 깜빡임 효과 함수
   const blinkEffect = () => {
     Animated.sequence([
-      Animated.timing(backgroundColor, { toValue: 1, duration: 100, useNativeDriver: false }),
-      Animated.timing(backgroundColor, { toValue: 0, duration: 100, useNativeDriver: false }),
-      Animated.timing(backgroundColor, { toValue: 1, duration: 100, useNativeDriver: false }),
-      Animated.timing(backgroundColor, { toValue: 0, duration: 100, useNativeDriver: false })
+      Animated.timing(backgroundColor, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: false,
+      }),
+      Animated.timing(backgroundColor, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: false,
+      }),
+      Animated.timing(backgroundColor, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: false,
+      }),
+      Animated.timing(backgroundColor, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: false,
+      }),
     ]).start();
   };
 
   const interpolatedColor = backgroundColor.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#bbd2ec', '#db4455'] // 기본 색상과 깜빡일 색상
+    outputRange: ['#bbd2ec', '#db4455'], // 기본 색상과 깜빡일 색상
   });
 
   // 키워드 가져오기
@@ -149,12 +192,20 @@ const QuizGame = ({ navigation }) => {
     return randomList;
   };
 
-  // 처음 문제 뽑기
+  // 문제 섞은 후 처음 문제 뽑기
   useEffect(() => {
-    const randomList = fillRandomArray(keywords.length);
+    if (isKeywordUpdated || keywords.length === 0) return;
+    setIsKeywordUpdated(true);
+    const randomList = fillRandomArray(keywords.length); // 랜덤 인덱스
     setRandomIndexList(randomList); // 상태 업데이트
+    console.log('randomList: ' + randomList);
+    const rearrangedKeywords = randomList.map((index) => keywords[index]);
+    console.log('rearrangedKeywords: ');
+    console.log(rearrangedKeywords);
+    setKeywords(rearrangedKeywords); // 재배열된 keywords로 상태 업데이트
+
     setCurrentKeyword(keywords[randomList[currentIndex]]);
-  }, [keywords]);
+  }, [keywords, isKeywordUpdated]);
 
   // 현재 키워드, 키패드 세팅
   // 3. 문제 업데이트 시 키패드 업데이트
@@ -336,6 +387,9 @@ const QuizGame = ({ navigation }) => {
   // 넘기기 버튼 클릭 시
   const handleNextButton = () => {
     // 현재 문제를 미해결 문제 리스트에 추가
+    console.log('currenIndex: ' + currentIndex);
+    console.log('unsolved: ');
+    console.log(unsolved);
     setUnsolved((prevUnsolved) => [...prevUnsolved, keywords[currentIndex]]);
     // 다음 문제로 이동
     setCurrentIndex(currentIndex + 1);
@@ -370,7 +424,9 @@ const QuizGame = ({ navigation }) => {
   ));
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: interpolatedColor }]}>
+    <Animated.View
+      style={[styles.container, { backgroundColor: interpolatedColor }]}
+    >
       {isLoading ? (
         <Spinner
           visible={true}
