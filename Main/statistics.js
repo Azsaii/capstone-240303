@@ -136,8 +136,7 @@ const Statistics = () => {
 
   const [data1, setData1] = useState([]); // 시대별 풀이 데이터
   const [data2, setData2] = useState([]); // 유형별 풀이 데이터
-  //지금까지 푼 문제 수
-  const solve = data1.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+
   //틀린 문제 수
   const [wrongProblemsCount, setWrongProblemsCount] = useState(0);
 
@@ -190,12 +189,30 @@ const Statistics = () => {
         <Image source={{ uri: imageurl }} style={styles.image} />
       </View>
 
-      <Text style={styles.title}>{userName}님의 오답 통계</Text>
-      <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
-      </View>
-      <Text style={{ marginTop: 10 }}>
+      {wrongProblemsCount == 0 && (
+        <>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={styles.title}>{userName}님의 오답 통계</Text>
+        </View>
+        <View style={{ marginTop: 10, flex: 1, alignItems: 'center' }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 20 }}>오답 데이터가 없습니다.</Text>
+          <Button
+          title="기출문제 공부하러가기"
+          onPress={() => navigation.navigate('기출문제')}
+          buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
+        />
+        </View>
+        </>
+      )}
+      
+      {wrongProblemsCount != 0 && (
+        <>
+        <Text style={styles.title}>{userName}님의 오답 통계</Text>
+        <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
+        <View style={styles.answerContainer}>
+          <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
+        </View>
+        <Text style={{ marginTop: 10 }}>
           <Text style={styles.boldText}>{studyera}</Text>
           시대와,
           <Text style={styles.boldText}> {studycategory}</Text>
@@ -217,21 +234,21 @@ const Statistics = () => {
             >{`${studycategory} 공부하러 가기`}</Text>
           </TouchableOpacity>
         </View>
-      <View>
-        <Text style={styles.title}>시대별 오답 통계</Text>
-        <BarChart data={data1} />
-      </View>
-      <View>
-        <Text style={styles.title}>유형별 오답 통계</Text>
-        <BarChart data={data2} />
-      </View>
-
-      
-      <Button
-        title="기출문제 공부하러가기"
-        onPress={() => navigation.navigate('기출문제')}
-        buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
-      />
+        <View>
+          <Text style={styles.title}>시대별 오답 통계</Text>
+          <BarChart data={data1} />
+        </View>
+        <View>
+          <Text style={styles.title}>유형별 오답 통계</Text>
+          <BarChart data={data2} />
+        </View>
+        <Button
+          title="기출문제 공부하러가기"
+          onPress={() => navigation.navigate('기출문제')}
+          buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
+        />
+        </>
+      )}
     </ScrollView>
   );
 };
@@ -247,8 +264,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   button: {
-    backgroundColor: '#008000', 
-    padding: 10, 
+    backgroundColor: '#008000',
+    padding: 10,
     borderRadius: 5,
   },
   buttonText: {
@@ -276,7 +293,8 @@ const styles = StyleSheet.create({
     fontSize: 30,
     marginTop: 20,
     marginBottom: 30,
-  },
+    textAlign: 'center', // 텍스트를 수평 가운데 맞춤
+},
   title2: {
     fontSize: 30,
     marginTop: 10,
