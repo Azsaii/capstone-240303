@@ -261,7 +261,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
     return (
         <View style={styles.container}>
             <View>
-                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><AntDesign name="clockcircleo" size={25} color="black" /> 시대 별</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><AntDesign name="clockcircleo" size={25} color="black" /> 시대별</Text>
                 <SelectList 
                     setSelected={(val) => setSelectedKeyword(val)} 
                     data={[
@@ -278,7 +278,7 @@ const HistoryTalesScreen = ({ navigation, isLoggedIn, userEmail }) => {
                     save="value"
                 />
 
-                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><Feather name="list" size={25} color="black" /> 유형 별</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: 10, marginBottom: 10 }}><Feather name="list" size={25} color="black" /> 유형별</Text>
 
                 <MultipleSelectList
                     data={[
