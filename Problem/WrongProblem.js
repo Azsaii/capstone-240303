@@ -201,16 +201,16 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: '#113946',
+    backgroundColor: '#bbd2ec',
   },
   cell: {
     borderRadius: 10,
-    borderColor: 'white',
+    borderColor: '#E1F7F5',
     borderWidth: 2,
     padding: 10,
     marginBottom: 10,
     color: 'white',
-    backgroundColor: '#BCA37F',
+    backgroundColor: '#7E8EF1',
   },
   name: {
     color: 'white',

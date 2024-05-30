@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Image, Dimensions, Animated, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Animated,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { Button, Text } from 'react-native-elements';
-import Svg, { Line, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, {
+  Line,
+  Rect,
+  Text as SvgText,
+  Defs,
+  LinearGradient,
+  Stop,
+} from 'react-native-svg';
 import { useSelector } from 'react-redux';
 import { firestore } from '../firebaseConfig';
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
@@ -11,10 +27,27 @@ import { useFocusEffect } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
 
 const horizontalAxisLabels = [
-  '전삼국', '삼국', '남북국', '후삼국', '고려', '조선', '개항기', '일제강점기', '해방이후',
+  '전삼국',
+  '삼국',
+  '남북국',
+  '후삼국',
+  '고려',
+  '조선',
+  '개항기',
+  '일제강점기',
+  '해방이후',
 ];
 const horizontalAxisLabels2 = [
-  '문화', '유물', '사건', '인물', '장소', '그림', '제도', '기구', '조약', '단체',
+  '문화',
+  '유물',
+  '사건',
+  '인물',
+  '장소',
+  '그림',
+  '제도',
+  '기구',
+  '조약',
+  '단체',
 ];
 
 //유형별 막대그래프
@@ -26,7 +59,6 @@ const BarChart = ({ data }) => {
   const verticalAxisHeight = chartHeight - 20;
 
   // 가로축에 표시할 레이블 배열
-
 
   if (data.length == 9) {
     list = horizontalAxisLabels;
@@ -51,7 +83,11 @@ const BarChart = ({ data }) => {
   }, [data, animatedValues, maxValue, verticalAxisHeight]);
 
   return (
-    <ScrollView horizontal={true} showsHorizontalScrollIndicator={true} style={{ marginTop: 20 }}>
+    <ScrollView
+      horizontal={true}
+      showsHorizontalScrollIndicator={true}
+      style={{ marginTop: 20 }}
+    >
       <View>
         <Svg height={chartHeight} width={chartWidth}>
           <Defs>
@@ -61,9 +97,23 @@ const BarChart = ({ data }) => {
             </LinearGradient>
           </Defs>
           {/* 가로축 */}
-          <Line x1={0} y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="#e0e0e0" strokeWidth="2" />
+          <Line
+            x1={0}
+            y1={chartHeight}
+            x2={chartWidth}
+            y2={chartHeight}
+            stroke="#e0e0e0"
+            strokeWidth="2"
+          />
           {/* 세로축 */}
-          <Line x1={0} y1={0} x2={0} y2={verticalAxisHeight} stroke="#e0e0e0" strokeWidth="2" />
+          <Line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={verticalAxisHeight}
+            stroke="#e0e0e0"
+            strokeWidth="2"
+          />
           {data.map((value, index) => (
             <React.Fragment key={index}>
               {/* 막대 그래프 */}
@@ -104,7 +154,6 @@ const BarChart = ({ data }) => {
 
 //메인 랜더링
 const Statistics = () => {
-
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const userName = useSelector((state) => state.userName);
@@ -116,18 +165,13 @@ const Statistics = () => {
   useFocusEffect(
     React.useCallback(() => {
       if (!isLoggedIn) {
+        Alert.alert('통계', '로그인 후 이용해주세요', [
+          {
+            text: '예',
 
-        Alert.alert(
-          '통계',
-          '로그인 후 이용해주세요',
-          [
-            {
-              text: '예',
-
-              onPress: () => navigation.navigate('로그인'),
-            }
-          ],
-        );
+            onPress: () => navigation.navigate('로그인'),
+          },
+        ]);
         return;
       } else {
       }
@@ -151,7 +195,10 @@ const Statistics = () => {
   //통계 랜더링마다 파이어베이스에서 통계값을 가져온다.
   useEffect(() => {
     const fetchData = async () => {
-      const dataDocRef = doc(firestore, `users/${userEmail}/wrongStatistics/data`);
+      const dataDocRef = doc(
+        firestore,
+        `users/${userEmail}/wrongStatistics/data`
+      );
 
       try {
         const docSnap = await getDoc(dataDocRef);
@@ -161,18 +208,22 @@ const Statistics = () => {
 
           // type 배열에서 7번 인덱스(일제강점기 오류) 제외하고 data2 상태에 저장
           const typeData = docSnap.data().type;
-          const filteredTypeData = typeData.filter((item, index) => index !== 7);
+          const filteredTypeData = typeData.filter(
+            (item, index) => index !== 7
+          );
           setData2(filteredTypeData);
         } else {
           console.log('No such document!');
         }
 
-        const wrongProblemsCollectionRef = collection(firestore, `users/${userEmail}/wrongProblems`);
+        const wrongProblemsCollectionRef = collection(
+          firestore,
+          `users/${userEmail}/wrongProblems`
+        );
         const querySnapshot = await getDocs(wrongProblemsCollectionRef);
         setWrongProblemsCount(querySnapshot.docs.length); // 문서 개수 업데이트
-
       } catch (error) {
-        console.error("Error getting document:", error);
+        console.error('Error getting document:', error);
       }
     };
 
@@ -180,8 +231,6 @@ const Statistics = () => {
       fetchData();
     }
   }, [userEmail]);
-
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -191,62 +240,76 @@ const Statistics = () => {
 
       {wrongProblemsCount == 0 && (
         <>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-        <Text style={styles.title}>{userName}님의 오답 통계</Text>
-        </View>
-        <View style={{ marginTop: 10, flex: 1, alignItems: 'center' }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 20 }}>오답 데이터가 없습니다.</Text>
-          <Button
-          title="기출문제 공부하러가기"
-          onPress={() => navigation.navigate('기출문제')}
-          buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
-        />
-        </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={styles.title}>{userName}님의 오답 통계</Text>
+          </View>
+          <View style={{ marginTop: 10, flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 20 }}>
+              오답 데이터가 없습니다.
+            </Text>
+            <Button
+              title="기출문제 공부하러가기"
+              onPress={() => navigation.navigate('기출문제')}
+              buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
+            />
+          </View>
         </>
       )}
-      
+
       {wrongProblemsCount != 0 && (
         <>
-        <Text style={styles.title}>{userName}님의 오답 통계</Text>
-        <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
-        <View style={styles.answerContainer}>
-          <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
-        </View>
-        <Text style={{ marginTop: 10 }}>
-          <Text style={styles.boldText}>{studyera}</Text>
-          시대와,
-          <Text style={styles.boldText}> {studycategory}</Text>
-          유형의 학습이 부족합니다
-        </Text>
-        <View style={styles.studybuttonContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('시대별 풀이')}
-          >
-            <Text style={styles.buttonText}>{`${studyera} 공부하러 가기`}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('유형별 풀이')}
-          >
-            <Text
-              style={styles.buttonText}
-            >{`${studycategory} 공부하러 가기`}</Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Text style={styles.title}>시대별 오답 통계</Text>
-          <BarChart data={data1} />
-        </View>
-        <View>
-          <Text style={styles.title}>유형별 오답 통계</Text>
-          <BarChart data={data2} />
-        </View>
-        <Button
-          title="기출문제 공부하러가기"
-          onPress={() => navigation.navigate('기출문제')}
-          buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
-        />
+          <Text style={styles.title}>{userName}님의 오답 통계</Text>
+          <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
+          <View style={styles.answerContainer}>
+            <Text style={styles.answerText}>
+              {wrongProblemsCount} 문제를 틀렸습니다
+            </Text>
+          </View>
+          <Text style={{ marginTop: 10 }}>
+            <Text style={styles.boldText}>{studyera}</Text>
+            시대와,
+            <Text style={styles.boldText}> {studycategory}</Text>
+            유형의 학습이 부족합니다
+          </Text>
+          <View style={styles.studybuttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() =>
+                navigation.navigate('시대별 풀이', {
+                  statisticsType: studyera,
+                })
+              }
+            >
+              <Text
+                style={styles.buttonText}
+              >{`${studyera} 공부하러 가기`}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() =>
+                navigation.navigate('유형별 풀이', {
+                  statisticsType: studycategory,
+                })
+              }
+            >
+              <Text
+                style={styles.buttonText}
+              >{`${studycategory} 공부하러 가기`}</Text>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <Text style={styles.title}>시대별 오답 통계</Text>
+            <BarChart data={data1} />
+          </View>
+          <View>
+            <Text style={styles.title}>유형별 오답 통계</Text>
+            <BarChart data={data2} />
+          </View>
+          <Button
+            title="기출문제 공부하러가기"
+            onPress={() => navigation.navigate('기출문제')}
+            buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
+          />
         </>
       )}
     </ScrollView>
@@ -294,7 +357,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 30,
     textAlign: 'center', // 텍스트를 수평 가운데 맞춤
-},
+  },
   title2: {
     fontSize: 30,
     marginTop: 10,
@@ -307,7 +370,6 @@ const styles = StyleSheet.create({
   answerText: {
     fontSize: 16,
     fontWeight: 'bold',
-
   },
 });
 

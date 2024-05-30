@@ -54,7 +54,7 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         killerList.push(doc.id);
-        console.log(doc.id);
+        //console.log(doc.id);
       });
       for (const item of killerList) {
         const subCollectionId = String(Math.floor(parseInt(item) / 100));
@@ -68,13 +68,13 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           newProblems = [...newProblems, docSnap];
-          console.log('Document data:', docSnap.data());
+          //console.log('Document data:', docSnap.data());
         } else {
           console.log('No such document!');
         }
       }
       setImageUrl(newProblems[0].data().img);
-      console.log(newProblems[0].data().id);
+      //console.log(newProblems[0].data().id);
       setProblems(newProblems);
       setDisplayProblem(newProblems[0].data().id);
       setProblemCount(1);
@@ -97,7 +97,7 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
 
       if (docSnap.exists()) {
         setAnswer(docSnap.data());
-        console.log('Document data:', docSnap.data());
+        //console.log('Document data:', docSnap.data());
       } else {
         console.log('No such document!');
       }
@@ -127,14 +127,14 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
       );
       querySnapshot.forEach((doc) => {
         firstBookMark.push(doc.id);
-        console.log(doc.id, ' => ', doc.data());
+        //console.log(doc.id, ' => ', doc.data());
       });
       setBookMarkList(firstBookMark);
       if (firstBookMark.includes(firstProblem)) {
-        console.log('체크 true' + firstProblem);
+        //console.log('체크 true' + firstProblem);
         setBookMarkStar(true);
       } else {
-        console.log('체크 false' + firstProblem);
+        //console.log('체크 false' + firstProblem);
         setBookMarkStar(false);
       }
     } catch (error) {
@@ -157,10 +157,10 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
       setImageUrl(temp.img);
       setProblemCount((prevCount) => prevCount - 1);
       if (bookMarkList.includes(temp.id)) {
-        console.log('체크 true' + temp.id);
+        console.log('북마크 체크 true' + temp.id);
         setBookMarkStar(true);
       } else {
-        console.log('체크 false' + temp.id);
+        console.log('북마크 체크 false' + temp.id);
         setBookMarkStar(false);
       }
     }
@@ -173,10 +173,10 @@ export default function KillerProblem({ isLoggedIn, userEmail }) {
       setImageUrl(temp.img);
       setProblemCount((prevCount) => prevCount + 1);
       if (bookMarkList.includes(temp.id)) {
-        console.log(problemCount + '체크 true' + temp.id);
+        console.log('북마크 체크 true' + temp.id);
         setBookMarkStar(true);
       } else {
-        console.log(problemCount + '체크 false' + temp.id);
+        console.log('북마크 체크 false' + temp.id);
         setBookMarkStar(false);
       }
     }
