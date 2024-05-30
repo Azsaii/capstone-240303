@@ -120,8 +120,9 @@ const PostDetail = ({ route, navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
-  const serverPath = 'http://192.168.0.3:8080/';
+  //const serverPath = 'http://192.168.0.3:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
+  const serverPath = 'http://192.168.181.1:8080/';
 
   // 작성 시각 변환기
   function formatDate(date) {
@@ -479,7 +480,7 @@ const PostDetail = ({ route, navigation }) => {
             onPress={() => {
               isLoggedIn
                 ? // 글 작성 페이지로 이동
-                  handleSubmit()
+                handleSubmit()
                 : navigation.navigate('Login');
             }}
           >

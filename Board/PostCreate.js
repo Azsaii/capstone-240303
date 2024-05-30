@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import axios from 'axios';
 import {
@@ -42,8 +42,9 @@ const PostCreate = ({ route, navigation }) => {
   );
 
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://192.168.0.3:8080/';
+  //const serverPath = 'http://192.168.0.3:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
+  const serverPath = 'http://192.168.181.1:8080/';
 
   useEffect(() => {
     setUserName(userEmail?.split('@')[0]);
@@ -51,10 +52,21 @@ const PostCreate = ({ route, navigation }) => {
 
   // 작성한 글을 db에 반영
   const handleSubmit = async () => {
-    // body의 길이가 5000자를 초과하는지 확인
+
+    if (title.length > 100) {
+      Alert.alert(
+        '경고',
+        '제목은 최대 100자 입니다.',
+        [
+          { text: '확인', onPress: () => console.log('OK Pressed') }, // 확인 버튼
+        ]
+      );
+      return;
+    }
+
     if (body.length > 5000) {
       Alert.alert(
-        '경고', // 경고 제목
+        '경고',
         '본문은 최대 5000자 입니다.',
         [
           { text: '확인', onPress: () => console.log('OK Pressed') }, // 확인 버튼

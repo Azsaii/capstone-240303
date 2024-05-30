@@ -60,8 +60,9 @@ const BoardScreenUI = ({ navigation, boardName }) => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://192.168.0.3:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
+  //const serverPath = 'http://192.168.0.3:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
   //const serverPath = 'http://223.194.133.88:8080/';
+  const serverPath = 'http://192.168.181.1:8080/';
 
   // 뒤로가기 시 게시판으로 이동
   useEffect(() => {
@@ -197,10 +198,10 @@ const BoardScreenUI = ({ navigation, boardName }) => {
             onPress={() => {
               isLoggedIn
                 ? // 글 작성 페이지로 이동
-                  navigation.navigate('PostCreate', {
-                    boardName: boardName,
-                    navigation: navigation,
-                  })
+                navigation.navigate('PostCreate', {
+                  boardName: boardName,
+                  navigation: navigation,
+                })
                 : navigation.navigate('Login');
             }}
           >
