@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   BackHandler,
+  TouchableOpacity,
 } from 'react-native';
 import { Button, TextInput, Card } from 'react-native-paper';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -61,9 +62,9 @@ const BoardScreenUI = ({ navigation, boardName }) => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
-  //const serverPath = 'http://192.168.0.3:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
+  const serverPath = 'http://192.168.0.5:8080/'; // 안드로이드 환경에서는 localhost로 작성하면 에러 발생하므로 ip주소 입력 필요.
   //const serverPath = 'http://223.194.133.88:8080/';
-  const serverPath = 'http://223.194.132.156:8080/';
+  //const serverPath = 'http://223.194.132.156:8080/';
 
   // 뒤로가기 시 게시판으로 이동
   useEffect(() => {
@@ -89,52 +90,32 @@ const BoardScreenUI = ({ navigation, boardName }) => {
     );
   }, [search, posts]);
 
-  // 10개씩 글 가져오기
-  const fetchPosts = () => {
+  // 글 리스트 가져오기
+  // id, 작성자 정보, 제목만 간략하게 가져온다.
+  useEffect(() => {
     setIsLoading(true);
-    console.log('test');
     axios
-      .get(serverPath + 'posts', { params: { boardName: boardName, index: index } })
+      .get(serverPath + 'posts', {
+        params: { boardName: boardName },
+      })
       .then((response) => {
-        const fetchedPosts = response.data;
+        const posts = response.data;
 
-        if (fetchedPosts) {
-          const postList = Object.keys(fetchedPosts).map((key) => ({
-            id: fetchedPosts[key].id,
-            postId: fetchedPosts[key].postId,
-            userEmail: fetchedPosts[key].userEmail,
-            title: fetchedPosts[key].title,
-            body: fetchedPosts[key].body,
+        if (posts) {
+          const postList = Object.keys(posts).map((key) => ({
+            id: posts[key].id,
+            userEmail: posts[key].userEmail,
+            title: posts[key].title,
           }));
-          console.log('postList: ');
-          console.log(postList);
-          setPosts(prevPosts => [...prevPosts, ...postList]);
-          setIndex(index + 10); // 10개씩 보임.
-          setIsLoading(false);
+          setPosts(postList);
         }
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error('Error: ' + error);
         setIsLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchPosts(); // 글 가져오기
-  }, [index]);
-
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    const totalPages = 10; // 총 페이지 수, 예시로 10을 사용
-    for (let i = 0; i < totalPages; i++) {
-      pageNumbers.push(
-        <TouchableOpacity key={i} onPress={() => setIndex(i)}>
-          <Text style={{ margin: 10 }}>{i + 1}</Text>
-        </TouchableOpacity>
-      );
-    }
-    return pageNumbers;
-  };
+  }, []);
 
   // 글 가져오기
   // useEffect(() => {
@@ -193,8 +174,8 @@ const BoardScreenUI = ({ navigation, boardName }) => {
                   ]}
                   onPress={() =>
                     navigation.navigate('PostDetail', {
-                      post: item,
                       boardName: boardName,
+                      selectedItem: item,
                     })
                   }
                 >
@@ -211,15 +192,6 @@ const BoardScreenUI = ({ navigation, boardName }) => {
                 </Card>
               )}
             />
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-              <TouchableOpacity onPress={() => setIndex(prev => Math.max(prev - 1, 0))}>
-                <Text>이전</Text>
-              </TouchableOpacity>
-              {renderPageNumbers()}
-              <TouchableOpacity onPress={() => setIndex(prev => Math.min(prev + 1, 9))}>
-                <Text>다음</Text>
-              </TouchableOpacity>
-            </View>
           </View>
           <Button
             style={styles.writeButton}
