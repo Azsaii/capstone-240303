@@ -5,19 +5,16 @@ import {
   Text,
   View,
   Alert,
-  Platform,
   TouchableOpacity,
   LogBox,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
 import {
   createDrawerNavigator,
   DrawerToggleButton,
   DrawerContentScrollView,
   DrawerItemList,
-  DrawerItem,
 } from '@react-navigation/drawer';
 
 import Statistics from './statistics';
@@ -44,8 +41,6 @@ LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
-
-const handleRefresh = () => { };
 const Drawer = createDrawerNavigator();
 
 const CustomBackButton = ({ navigation }) => {
@@ -53,10 +48,8 @@ const CustomBackButton = ({ navigation }) => {
   const handlePress = () => {
     if (route.name === '회원가입') {
       navigation.navigate('로그인');
-    } else if (route.name === '역사이야기') {
-      navigation.navigate('HomeScreen');
-      handleRefresh();
-    } else {
+    } 
+     else {
       navigation.goBack();
     }
   };
