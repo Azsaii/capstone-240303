@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoggedIn, setUserEmail, setUserName } from '../state';
-import {
-  Text,
-  View,
-  Alert,
-  TouchableOpacity,
-  LogBox,
-} from 'react-native';
+import { Text, View, Alert, TouchableOpacity, LogBox } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import {
@@ -48,8 +42,7 @@ const CustomBackButton = ({ navigation }) => {
   const handlePress = () => {
     if (route.name === '회원가입') {
       navigation.navigate('로그인');
-    } 
-     else {
+    } else {
       navigation.goBack();
     }
   };
@@ -210,8 +203,9 @@ export default function Sidebar({ navigation }) {
           ),
         }}
       >
-        {() => (
+        {(props) => (
           <TypeProblem
+            {...props}
             param={'era'}
             isLoggedIn={isLoggedIn}
             userEmail={userEmail}
@@ -245,8 +239,9 @@ export default function Sidebar({ navigation }) {
           ),
         }}
       >
-        {() => (
+        {(props) => (
           <TypeProblem
+            {...props}
             param={'type'}
             isLoggedIn={isLoggedIn}
             userEmail={userEmail}
