@@ -373,12 +373,14 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 1,
     justifyContent: 'space-between',
+    backgroundColor: '#bbd2ec',
   },
   problemInfo: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: '3%',
   },
   content: {
     paddingBottom: 60,
@@ -386,6 +388,7 @@ const styles = StyleSheet.create({
   answerButton: {
     backgroundColor: 'orange',
     borderRadius: 5,
+    marginRight: '3%',
   },
   arrowButton: {
     display: 'flex',
