@@ -27,8 +27,8 @@ import AnswerModal from './AnswerModal';
 import { firestore } from '../firebaseConfig';
 import Spinner from 'react-native-loading-spinner-overlay';
 
-export default function TypeProblem({ param, isLoggedIn, userEmail }) {
-  //const { param } = route.params;
+export default function TypeProblem({ param, isLoggedIn, userEmail, route }) {
+  const { statisticsType } = route.params || { statisticsType: '' };
   const [imageUrl, setImageUrl] = useState(null);
   const [problems, setProblems] = useState([]);
   const [displayProblem, setDisplayProblem] = useState(null);
@@ -42,6 +42,8 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   const [isScrollButton, setIsScrollButton] = useState(false);
   const scrollViewRef = useRef(null);
   const [scrollIntervalId, setScrollIntervalId] = useState(null);
+  const [placeholder, setPlaceholder] = useState('');
+  const [selectedKey, setSelectedKey] = useState('');
   const isFocused = useIsFocused();
   const openModal = () => {
     setModalOpen(true);
@@ -59,7 +61,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       //각 자식컬렉션에 대해 반복적으로 쿼리를 수행
       var newProblems = [];
       for (const subCollectionId of subCollectionIds) {
-        console.log('Selected Problem:', temp);
+        //console.log('Selected Problem:', temp);
         const q = query(
           collection(
             firestore,
@@ -80,7 +82,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       }
 
       setImageUrl(newProblems[0].data().img);
-      console.log(newProblems[0].data().id);
+      //console.log(newProblems[0].data().id);
       setProblems(newProblems);
       setDisplayProblem(newProblems[0].data().id);
       setProblemCount(1);
@@ -103,7 +105,7 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
 
       if (docSnap.exists()) {
         setAnswer(docSnap.data());
-        console.log('Document data:', docSnap.data());
+        //console.log('Document data:', docSnap.data());
       } else {
         console.log('No such document!');
       }
@@ -134,14 +136,14 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       );
       querySnapshot.forEach((doc) => {
         firstBookMark.push(doc.id);
-        console.log(doc.id, ' => ', doc.data());
+        //console.log(doc.id, ' => ', doc.data());
       });
       setBookMarkList(firstBookMark);
       if (firstBookMark.includes(firstProblem)) {
-        console.log('체크 true' + firstProblem);
+        //console.log('체크 true' + firstProblem);
         setBookMarkStar(true);
       } else {
-        console.log('체크 false' + firstProblem);
+        //console.log('체크 false' + firstProblem);
         setBookMarkStar(false);
       }
     } catch (error) {
@@ -150,10 +152,10 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   };
   const eraData = [
     { key: '전삼국', value: '전삼국' },
-    { key: '삼국', value: '삼국시대' },
-    { key: '후삼국', value: '후삼국시대' },
-    { key: '고려', value: '고려시대' },
-    { key: '조선', value: '조선시대' },
+    { key: '삼국', value: '삼국' },
+    { key: '후삼국', value: '후삼국' },
+    { key: '고려', value: '고려' },
+    { key: '조선', value: '조선' },
     { key: '개항기', value: '개항기' },
     { key: '일제강점기', value: '일제강점기' },
     { key: '해방이후', value: '해방이후' },
@@ -179,10 +181,10 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       setImageUrl(temp.img);
       setProblemCount((prevCount) => prevCount - 1);
       if (bookMarkList.includes(temp.id)) {
-        console.log('체크 true' + temp.id);
+        console.log('북마크 체크 true' + temp.id);
         setBookMarkStar(true);
       } else {
-        console.log('체크 false' + temp.id);
+        console.log('북마크 체크 false' + temp.id);
         setBookMarkStar(false);
       }
     }
@@ -195,10 +197,10 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
       setImageUrl(temp.img);
       setProblemCount((prevCount) => prevCount + 1);
       if (bookMarkList.includes(temp.id)) {
-        console.log('체크 true' + temp.id);
+        console.log('북마크 체크 true' + temp.id);
         setBookMarkStar(true);
       } else {
-        console.log('체크 false' + temp.id);
+        console.log('북마크 체크 false' + temp.id);
         setBookMarkStar(false);
       }
     }
@@ -215,15 +217,22 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
   };
 
   useEffect(() => {
-    if (param === 'era') setSelectlistData(eraData);
-    else setSelectlistData(typeData);
-    //setSelectlistData(param === 'era' ? eraData : typeData);
-    changeData(param === 'era' ? '전삼국' : '사건');
-  }, []); //컴포넌트가 마운트될 때만 실행
-
-  useEffect(() => {
     if (isLoggedIn && problems.length > 0)
       getBookMark(problems[problemCount - 1].data().id);
+    // if (param === 'era') setSelectlistData(eraData);
+    // else setSelectlistData(typeData);
+    setSelectlistData(param === 'era' ? eraData : typeData);
+    if (!statisticsType == '') {
+      console.log('통계타입' + statisticsType);
+      changeData(statisticsType);
+      setSelectedKey(statisticsType);
+      setPlaceholder(statisticsType);
+    } else {
+      const temp = param === 'era' ? '전삼국' : '사건';
+      changeData(temp);
+      setSelectedKey(temp);
+      setPlaceholder(temp);
+    }
   }, [isFocused]);
 
   //좌우 화면 슬라이드로 문제 넘기기
@@ -320,16 +329,18 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
         <View style={styles.problemInfo}>
           <SelectList
             setSelected={(val) => {
-              const selectedKey = selectlistData.find(
+              const key = selectlistData.find(
                 (item) => item.value === val
               )?.key;
-              changeData(selectedKey);
+              changeData(key);
+              setSelectedKey(key);
             }}
             data={selectlistData}
             save="value"
-            placeholder={param === 'era' ? '전삼국' : '사건'}
+            placeholder={placeholder}
             boxStyles={styles.boxStyles} // 스타일 적용
             dropdownStyles={styles.dropdownStyles} // 스타일 적용
+            defaultOption={{ key: selectedKey, value: selectedKey }}
           />
         </View>
         {displayProblem ? (
@@ -437,12 +448,12 @@ const styles = StyleSheet.create({
   boxStyles: {
     width: 300,
     marginRight: 15,
-    borderColor: '#028391', // 선택 박스 테두리 색상
-    backgroundColor: 'white', // 선택 박스 배경 색상
+    borderColor: '#028391',
+    backgroundColor: 'white',
   },
   dropdownStyles: {
-    borderColor: '#028391', // 드롭다운 리스트 테두리 색상
-    backgroundColor: 'white', // 드롭다운 리스트 배경 색상
+    borderColor: '#028391',
+    backgroundColor: 'white',
   },
   content: {
     paddingBottom: 60,
