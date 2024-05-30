@@ -42,7 +42,8 @@ const PostCreate = ({ route, navigation }) => {
   );
 
   const userEmail = useSelector((state) => state.userEmail);
-  const serverPath = 'http://192.168.0.5:8080/';
+  const serverPath = useSelector((state) => state.serverPath);
+  //const serverPath = 'http://192.168.0.5:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
   //const serverPath = 'http://223.194.132.156:8080/';
 

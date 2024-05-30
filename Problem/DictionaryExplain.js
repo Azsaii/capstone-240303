@@ -12,17 +12,20 @@ import {
 import RenderHtml from 'react-native-render-html';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 
 function DictionaryExplain({ route }) {
   const { eid, fromMap } = route.params;
   const [content, setContent] = useState(null);
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  const serverPath = useSelector((state) => state.serverPath);
 
   useEffect(() => {
     if (isFocused) {
       // fetch('http://192.168.219.110:8080/character/' + eid) //home
-      fetch('http://192.168.219.126:8080/character/' + eid) //home
+      //fetch('http://192.168.219.126:8080/character/' + eid) //home
+      fetch(serverPath + 'character/' + eid)
         .then((response) => response.json())
         .then((data) => {
           setContent(data.article);

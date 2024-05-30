@@ -124,7 +124,9 @@ const PostDetail = ({ route, navigation }) => {
   let postCreatingTime = '';
   const isWeb = useSelector((state) => state.isWeb);
   const scrollViewRef = useRef();
-  const serverPath = 'http://192.168.0.5:8080/';
+
+  const serverPath = useSelector((state) => state.serverPath);
+  //const serverPath = 'http://192.168.0.5:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
   //const serverPath = 'http://223.194.132.156:8080/';
 

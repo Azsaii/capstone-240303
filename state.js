@@ -7,6 +7,8 @@ const initialState = {
   userEmail: '',
   userName: '',
   isWeb: false,
+  //serverPath: 'http://localhost:8080/',
+  serverPath: 'http://52.79.56.22:8080/',
 };
 
 // 액션 타입 정의
