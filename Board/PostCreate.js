@@ -100,7 +100,7 @@ const PostCreate = ({ route, navigation }) => {
             boardName: boardName,
           });
         } else {
-          navigation.goBack();
+          navigation.replace('BoardScreen');
         }
       })
       .catch((error) => {

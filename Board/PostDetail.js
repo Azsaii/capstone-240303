@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Alert,
   BackHandler,
@@ -315,7 +314,7 @@ const PostDetail = ({ route, navigation }) => {
           onPress: () => {
             removeData(url);
             if (url.includes('posts')) {
-              navigation.navigate('BoardScreen');
+              navigation.replace('BoardScreen');
             }
           },
         },

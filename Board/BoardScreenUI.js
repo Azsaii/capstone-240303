@@ -57,6 +57,7 @@ const BoardScreenUI = ({ navigation, boardName }) => {
   const [search, setSearch] = useState(''); // 검색 텍스트
   const [filteredPosts, setFilteredPosts] = useState([]); // 검색으로 필터링 된 글
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+  const [index, setIndex] = useState(0);
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
@@ -76,7 +77,6 @@ const BoardScreenUI = ({ navigation, boardName }) => {
         return true;
       }
     );
-
     return () => backHandler.remove();
   }, []);
 
@@ -89,31 +89,52 @@ const BoardScreenUI = ({ navigation, boardName }) => {
     );
   }, [search, posts]);
 
-  // 글 가져오기
-  useEffect(() => {
+  // 10개씩 글 가져오기
+  const fetchPosts = () => {
     setIsLoading(true);
+    console.log('test');
     axios
-      .get(serverPath + 'posts', { params: { boardName: boardName } })
+      .get(serverPath + 'posts', { params: { boardName: boardName, index: index } })
       .then((response) => {
-        const posts = response.data;
+        const fetchedPosts = response.data;
 
-        if (posts) {
-          const postList = Object.keys(posts).map((key) => ({
-            id: posts[key].id,
-            postId: posts[key].postId,
-            userEmail: posts[key].userEmail,
-            title: posts[key].title,
-            body: posts[key].body,
+        if (fetchedPosts) {
+          const postList = Object.keys(fetchedPosts).map((key) => ({
+            id: fetchedPosts[key].id,
+            postId: fetchedPosts[key].postId,
+            userEmail: fetchedPosts[key].userEmail,
+            title: fetchedPosts[key].title,
+            body: fetchedPosts[key].body,
           }));
-          setPosts(postList);
+          console.log('postList: ');
+          console.log(postList);
+          setPosts(prevPosts => [...prevPosts, ...postList]);
+          setIndex(index + 10); // 10개씩 보임.
+          setIsLoading(false);
         }
-        setIsLoading(false);
       })
       .catch((error) => {
         console.error('Error: ' + error);
         setIsLoading(false);
       });
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchPosts(); // 글 가져오기
+  }, [index]);
+
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const totalPages = 10; // 총 페이지 수, 예시로 10을 사용
+    for (let i = 0; i < totalPages; i++) {
+      pageNumbers.push(
+        <TouchableOpacity key={i} onPress={() => setIndex(i)}>
+          <Text style={{ margin: 10 }}>{i + 1}</Text>
+        </TouchableOpacity>
+      );
+    }
+    return pageNumbers;
+  };
 
   // 글 가져오기
   // useEffect(() => {
@@ -190,6 +211,15 @@ const BoardScreenUI = ({ navigation, boardName }) => {
                 </Card>
               )}
             />
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => setIndex(prev => Math.max(prev - 1, 0))}>
+                <Text>이전</Text>
+              </TouchableOpacity>
+              {renderPageNumbers()}
+              <TouchableOpacity onPress={() => setIndex(prev => Math.min(prev + 1, 9))}>
+                <Text>다음</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <Button
             style={styles.writeButton}
