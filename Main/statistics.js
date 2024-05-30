@@ -107,6 +107,7 @@ const Statistics = () => {
 
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
+  const userName = useSelector((state) => state.userName);
   const Totalscore = 436;
   const imageurl =
     'https://firebasestorage.googleapis.com/v0/b/capstone-ac206.appspot.com/o/%ED%86%B5%EA%B3%84%EB%B0%B0%EA%B2%BD%EA%B2%BD.jpg?alt=media&token=0bbb3935-6ca6-4eba-8093-65771dcbb7f0';
@@ -140,14 +141,13 @@ const Statistics = () => {
   //틀린 문제 수
   const [wrongProblemsCount, setWrongProblemsCount] = useState(0);
 
+  const maxera = Math.max(...data1);
+  const maxcategory = Math.max(...data2);
+  const maxeraindex = data1.indexOf(maxera);
+  const maxcategoryindex = data2.indexOf(maxcategory);
 
-  //최저 공부량 탐색변수
-  const minera = Math.min(...data1);
-  const mincategory = Math.min(...data2);
-  const mineraindex = data1.indexOf(minera);
-  const mincategoryindex = data2.indexOf(mincategory);
-  const studyera = horizontalAxisLabels[mineraindex];
-  const studycategory = horizontalAxisLabels2[mincategoryindex];
+  const studyera = horizontalAxisLabels[maxeraindex];
+  const studycategory = horizontalAxisLabels2[maxcategoryindex];
 
   //통계 랜더링마다 파이어베이스에서 통계값을 가져온다.
   useEffect(() => {
@@ -190,22 +190,17 @@ const Statistics = () => {
         <Image source={{ uri: imageurl }} style={styles.image} />
       </View>
 
-      <Text style={styles.title}>{userEmail}님의 학습 통계</Text>
-      <View>
-        <Text style={styles.title}>시대별 문제풀이 통계</Text>
-        <BarChart data={data1} />
+      <Text style={styles.title}>{userName}님의 오답 통계</Text>
+      <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
+      <View style={styles.answerContainer}>
+        <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
       </View>
-      <View>
-        <Text style={styles.title}>유형별 문제풀이 통계</Text>
-        <BarChart data={data2} />
-        <Text style={{ marginTop: 10 }}>
+      <Text style={{ marginTop: 10 }}>
           <Text style={styles.boldText}>{studyera}</Text>
           시대와,
           <Text style={styles.boldText}> {studycategory}</Text>
           유형의 학습이 부족합니다
         </Text>
-
-
         <View style={styles.studybuttonContainer}>
           <TouchableOpacity
             style={styles.button}
@@ -213,7 +208,6 @@ const Statistics = () => {
           >
             <Text style={styles.buttonText}>{`${studyera} 공부하러 가기`}</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate('유형별 풀이')}
@@ -223,28 +217,18 @@ const Statistics = () => {
             >{`${studycategory} 공부하러 가기`}</Text>
           </TouchableOpacity>
         </View>
+      <View>
+        <Text style={styles.title}>시대별 오답 통계</Text>
+        <BarChart data={data1} />
+      </View>
+      <View>
+        <Text style={styles.title}>유형별 오답 통계</Text>
+        <BarChart data={data2} />
       </View>
 
-      <Text style={styles.title2}>지금까지 푼 문제 중...</Text>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>
-          {solve}문제를 풀었습니다
-        </Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>{solve - wrongProblemsCount} 문제를 맞추고</Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>{wrongProblemsCount} 문제를 틀렸습니다</Text>
-      </View>
-      <View style={styles.answerContainer}>
-        <Text style={styles.answerText}>
-          정답률 {(((solve - wrongProblemsCount) / solve) * 100).toFixed(2)}%
-        </Text>
-        <Text style={styles.answerText}>총점 {Totalscore}점</Text>
-      </View>
+      
       <Button
-        title="공부하러가기"
+        title="기출문제 공부하러가기"
         onPress={() => navigation.navigate('기출문제')}
         buttonStyle={{ marginTop: 20, backgroundColor: '#008000' }} // Green color
       />
@@ -258,19 +242,19 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   studybuttonContainer: {
-    flexDirection: 'row', // 버튼을 가로로 배치
-    justifyContent: 'space-evenly', // 버튼 사이에 공간을 동등하게 배분
-    marginTop: 10, // 상단 여백
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginTop: 30,
   },
   button: {
-    backgroundColor: '#008000', // 녹색 배경
-    padding: 10, // 내부 여백
-    borderRadius: 5, // 버튼의 모서리를 둥글게
+    backgroundColor: '#008000', 
+    padding: 10, 
+    borderRadius: 5,
   },
   buttonText: {
-    color: '#FFFFFF', // 흰색 글씨
-    fontSize: 16, // 글씨 크기
-    fontWeight: 'bold', // 글씨 두께
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   boldText: {
     fontWeight: 'bold',
@@ -283,7 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: width, // 화면의 가로 길이에 맞추기
+    width: width,
     height: 100,
     resizeMode: 'cover',
     borderRadius: 10,
@@ -295,39 +279,17 @@ const styles = StyleSheet.create({
   },
   title2: {
     fontSize: 30,
-    marginTop: 40,
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 10,
     marginTop: 10,
-  },
-  buttonContainer: {
-    marginTop: 20,
   },
   answerContainer: {
-    flexDirection: 'row', // 수평으로 배치하기 위해 flexDirection 설정
-    justifyContent: 'space-between', // 요소들 사이에 공간을 나누어 배치
-    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
   answerText: {
     fontSize: 16,
     fontWeight: 'bold',
-    margin: 10,
-  },
-  horizontalLine: {
-    borderBottomColor: 'black',
-    borderBottomWidth: 1,
-    marginVertical: 20, // 수평선 위아래 간격 조절
-  },
-  progressText: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -20 }, { translateY: -10 }],
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3498db',
+
   },
 });
 

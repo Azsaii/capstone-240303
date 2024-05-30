@@ -382,7 +382,7 @@ export default function Sidebar({ navigation }) {
                   marginBottom: 3,
                 }}
               >
-                통계
+                오답통계
               </Text>
             </View>
           ),
