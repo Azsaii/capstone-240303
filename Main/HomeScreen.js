@@ -32,7 +32,7 @@ const HomeScreen = ({ navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const userName = useSelector((state) => state.userName);
-  
+
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -49,85 +49,85 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <>
-        <View style={[styles.container]}>
-          <View style={styles.imagecontainer}>
-            <Image source={{ uri: imageurl }} style={styles.image} />
-          </View>
-          <View style={styles.titlecontainer}>
-            <Text style={styles.title}>한국사 능력 검정 시험</Text>
-            <Text style={{ fontSize: 15 }}>
-              {isLoggedIn ? <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-                {userName}님,
-              </Text>
-               : <></>}
-                환영합니다.
+      <View style={[styles.container]}>
+        <View style={styles.imagecontainer}>
+          <Image source={{ uri: imageurl }} style={styles.image} />
+        </View>
+        <View style={styles.titlecontainer}>
+          <Text style={styles.title}>한국사 능력 검정 시험</Text>
+          <Text style={{ fontSize: 15 }}>
+            {userName.length !== 0 ? <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+              {userName}님,
             </Text>
-            <StatusBar style="auto" />
-          </View>
-          <View style={styles.horizontalLine}>
-            <Text style={styles.gogo}>바로가기</Text>
-          </View>
-          <View style={styles.buttonttopContainer}>
-            <TouchableOpacity
-              style={styles.buttontop}
-              onPress={() => navigation.navigate('기출문제')}
-            >
-              <Text style={styles.buttontopText}>기출문제 풀이</Text>
-              <MaterialIcons
-                name="format-list-numbered"
-                size={30}
-                color="black"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttontop}
-              onPress={() => navigation.navigate('시대별 풀이')}
-            >
-              <Text style={styles.buttontopText}>시대별 풀이</Text>
-              <MaterialIcons
-                name="access-time-filled"
-                size={24}
-                color="black"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttontop}
-              onPress={() => navigation.navigate('유형별 풀이')}
-            >
-              <Text style={styles.buttontopText}>유형별 풀이</Text>
-              <MaterialIcons name="account-balance" size={30} color="black" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.boardContainer}>
-            <TouchableOpacity
-              style={styles.buttonboard}
-              onPress={() => navigation.navigate('게시판')}
-            >
-              <Text style={styles.buttonboardText}>게시판 바로가기</Text>
-            </TouchableOpacity>
-          </View>
+              : <></>}
+            환영합니다.
+          </Text>
+          <StatusBar style="auto" />
+        </View>
+        <View style={styles.horizontalLine}>
+          <Text style={styles.gogo}>바로가기</Text>
+        </View>
+        <View style={styles.buttonttopContainer}>
+          <TouchableOpacity
+            style={styles.buttontop}
+            onPress={() => navigation.navigate('기출문제')}
+          >
+            <Text style={styles.buttontopText}>기출문제 풀이</Text>
+            <MaterialIcons
+              name="format-list-numbered"
+              size={30}
+              color="black"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttontop}
+            onPress={() => navigation.navigate('시대별 풀이')}
+          >
+            <Text style={styles.buttontopText}>시대별 풀이</Text>
+            <MaterialIcons
+              name="access-time-filled"
+              size={24}
+              color="black"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttontop}
+            onPress={() => navigation.navigate('유형별 풀이')}
+          >
+            <Text style={styles.buttontopText}>유형별 풀이</Text>
+            <MaterialIcons name="account-balance" size={30} color="black" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.boardContainer}>
+          <TouchableOpacity
+            style={styles.buttonboard}
+            onPress={() => navigation.navigate('게시판')}
+          >
+            <Text style={styles.buttonboardText}>게시판 바로가기</Text>
+          </TouchableOpacity>
+        </View>
 
-          <View style={styles.horizontalLine2}></View>
+        <View style={styles.horizontalLine2}></View>
 
-          <View style={styles.skyBlueBoxContainer}>
-            <View style={styles.skyBlueBox}>
-              <Text style={styles.dateText}>
-                시험까지 {dayDifference}일 남았습니다.
-              </Text>
-              <Text style={styles.boxText}>
-                시험일 : {testDate.getFullYear()}-{testDate.getMonth() + 1}-
-                {testDate.getDate()}
-              </Text>
-              <TouchableOpacity
-                style={styles.buttonLink}
-                onPress={LinkButtonPressed}
-              >
-                <Text style={styles.buttonDateText}>시험 일정 확인하기</Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.skyBlueBoxContainer}>
+          <View style={styles.skyBlueBox}>
+            <Text style={styles.dateText}>
+              시험까지 {dayDifference}일 남았습니다.
+            </Text>
+            <Text style={styles.boxText}>
+              시험일 : {testDate.getFullYear()}-{testDate.getMonth() + 1}-
+              {testDate.getDate()}
+            </Text>
+            <TouchableOpacity
+              style={styles.buttonLink}
+              onPress={LinkButtonPressed}
+            >
+              <Text style={styles.buttonDateText}>시험 일정 확인하기</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      
+      </View>
+
     </>
   );
 };

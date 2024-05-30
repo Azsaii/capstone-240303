@@ -43,7 +43,7 @@ const Login = ({ navigation, onLogin }) => {
         const userName = docSnap.data().name; // 문서에서 이름 필드 추출
         dispatch(setUserName(userName)); // Redux store에 사용자 이름 저장
         setErrorMessage('');
-        navigation.goBack();
+        navigation.navigate('Sidebar');
       } else {
         // 회원 데이터가 없는 경우
         setErrorMessage('이메일과 비밀번호를 확인하세요.');
@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // 배경의 투명도 조절 가능
-    borderRadius: 10, // 컨테이너의 모서리를 둥글게 만듦
   },
   title: {
     fontSize: 24,

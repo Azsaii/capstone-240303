@@ -45,9 +45,9 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
 
-const handleRefresh = () => {};
-
+const handleRefresh = () => { };
 const Drawer = createDrawerNavigator();
+
 const CustomBackButton = ({ navigation }) => {
   const route = useRoute();
   const handlePress = () => {
@@ -67,40 +67,27 @@ const CustomBackButton = ({ navigation }) => {
   );
 };
 
-const CustomDrawerContent = (props) => {
-  const navigation = useNavigation();
-  return (
-    <DrawerContentScrollView {...props}>
-      <View style={{ alignItems: 'center', marginTop: 20 }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10 }}>
-          한국사 에듀
-        </Text>
-      </View>
-      <DrawerItemList {...props} />
-    </DrawerContentScrollView>
-  );
-};
+const CustomDrawerContent = (props) => (
+  <DrawerContentScrollView {...props}>
+    <View style={{ alignItems: 'center', marginTop: 20 }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10 }}>
+        한국사 에듀
+      </Text>
+    </View>
+    <DrawerItemList {...props} />
+  </DrawerContentScrollView>
+);
 
 export default function Sidebar({ navigation }) {
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const isWeb = useSelector((state) => state.isWeb);
+  const navigationRef = useRef();
 
   const handleLogin = (email) => {
     dispatch(setUserEmail(email));
     dispatch(setLoggedIn(true));
-  };
-  const navigationRef = useRef();
-
-  const handleLogout = () => {
-    dispatch(setUserEmail(''));
-    dispatch(setLoggedIn(false));
-    dispatch(setUserName(''));
-
-    if (navigationRef.current) {
-      navigationRef.current.navigate('HomeScreen');
-    }
   };
 
   useEffect(() => {
@@ -109,14 +96,19 @@ export default function Sidebar({ navigation }) {
     }
   }, [isLoggedIn]);
 
-  const handleLogoutButtonPress = () => {
+  const handleLogout = () => {
     Alert.alert(
       '로그아웃',
       '로그아웃 하시겠습니까?',
       [
         {
           text: '예',
-          onPress: () => handleLogout(), // Yes를 누르면 로그아웃 함수를 호출합니다.
+          onPress: () => {
+            dispatch(setUserEmail(''));
+            dispatch(setLoggedIn(false));
+            dispatch(setUserName(''));
+            navigation.replace('Sidebar');
+          },
         },
         {
           text: '아니요',
@@ -599,7 +591,7 @@ export default function Sidebar({ navigation }) {
           name="로그아웃"
           options={({ route }) => ({
             drawerLabel: () => {
-              return <Text onPress={handleLogoutButtonPress}>로그아웃</Text>;
+              return <Text onPress={handleLogout}>로그아웃</Text>;
             },
             headerShown: false,
           })}

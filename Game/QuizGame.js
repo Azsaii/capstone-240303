@@ -249,8 +249,7 @@ const QuizGame = ({ navigation }) => {
         setScore(score + 1); // 스코어 추가
         setSolveCount(solveCount + 1); // 문제 수 카운트
       } else {
-        // 정답이 아닐 경우 깜빡임 효과
-        blinkEffect();
+        blinkEffect(); // 정답이 아닐 경우 깜빡임 효과
       }
       // guess 초기화
       setGuess(

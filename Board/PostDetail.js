@@ -122,7 +122,7 @@ const PostDetail = ({ route, navigation }) => {
   const isWeb = useSelector((state) => state.isWeb);
   //const serverPath = 'http://192.168.0.3:8080/';
   //const serverPath = 'http://223.194.133.88:8080/';
-  const serverPath = 'http://192.168.181.1:8080/';
+  const serverPath = 'http://223.194.132.156:8080/';
 
   // 작성 시각 변환기
   function formatDate(date) {
