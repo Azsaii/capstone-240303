@@ -328,7 +328,8 @@ export default function TypeProblem({ param, isLoggedIn, userEmail }) {
             data={selectlistData}
             save="value"
             placeholder={param === 'era' ? '전삼국' : '사건'}
-            boxStyles={{ width: 300, marginRight: 15 }}
+            boxStyles={styles.boxStyles} // 스타일 적용
+            dropdownStyles={styles.dropdownStyles} // 스타일 적용
           />
         </View>
         {displayProblem ? (
@@ -424,12 +425,24 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 1,
     justifyContent: 'space-between',
+    backgroundColor: '#bbd2ec',
   },
   problemInfo: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: '2%',
+  },
+  boxStyles: {
+    width: 300,
+    marginRight: 15,
+    borderColor: '#028391', // 선택 박스 테두리 색상
+    backgroundColor: 'white', // 선택 박스 배경 색상
+  },
+  dropdownStyles: {
+    borderColor: '#028391', // 드롭다운 리스트 테두리 색상
+    backgroundColor: 'white', // 드롭다운 리스트 배경 색상
   },
   content: {
     paddingBottom: 60,
@@ -437,6 +450,7 @@ const styles = StyleSheet.create({
   answerButton: {
     backgroundColor: 'orange',
     borderRadius: 5,
+    marginRight: '2%',
   },
   arrowButton: {
     display: 'flex',
