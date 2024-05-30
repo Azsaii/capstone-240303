@@ -125,9 +125,9 @@ export default function BasicProblem({ route }) {
     getData();
     navigation.setOptions({
       headerTitle:
-        '한국사 능력 검정 시험' +
+        '한국사 능력 검정 시험 ' +
         Math.floor(parseInt(problemId) / 100) +
-        '회' +
+        '회 ' +
         (parseInt(problemId) % 100) +
         '번',
       headerShown: true,
@@ -162,8 +162,8 @@ export default function BasicProblem({ route }) {
     }
   }, [data]);
   return (
-    <View>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollView}>
         {data && (
           <View style={styles.problemInfo}>
             <Text style={{ paddingRight: 20 }}>시대: {data.era}</Text>
@@ -217,7 +217,12 @@ export default function BasicProblem({ route }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    padding: 10,
+    flex: 1,
+    justifyContent: 'space-between',
+    backgroundColor: '#bbd2ec',
+  },
+  scrollView: {
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -227,10 +232,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: '3%',
   },
   answerButton: {
     backgroundColor: 'orange',
     borderRadius: 5,
+    marginRight: '3%',
   },
   arrowButton: {
     display: 'flex',

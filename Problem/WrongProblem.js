@@ -28,10 +28,10 @@ function WrongProblem({ userEmail }) {
   return (
     <Stack.Navigator initialRouteName="WrongProblemTab">
       <Stack.Screen
-        name={userEmail}
+        name="다시풀기"
         component={WrongProblemTab}
         initialParams={{ userEmail: userEmail }}
-        options={{ headerTitle: '다시풀기', headerTitleAlign: 'center' }}
+        options={{ headerTitleAlign: 'center' }}
       />
       <Stack.Screen
         name="BasicProblem"
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: 'orange',
+    backgroundColor: '#113946',
   },
   cell: {
     borderRadius: 10,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     color: 'white',
-    backgroundColor: 'orange',
+    backgroundColor: '#BCA37F',
   },
   name: {
     color: 'white',
