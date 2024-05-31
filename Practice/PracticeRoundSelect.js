@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet } from 'react-native';
 import { Card, Title } from 'react-native-paper';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
+import { X } from '@mui/icons-material';
 
 const styles = StyleSheet.create({
   container: {
@@ -44,11 +45,10 @@ const PracticeRoundSelect = ({ navigation }) => {
       answerRoundSnapshot.forEach((doc) => {
         if (doc.id == item.id) answerItem = { id: doc.id, ref: doc.ref };
       });
-
+   
       // 가져온 답안 데이터를 ProblemDetail 화면으로 전달
       navigation.navigate('ProblemDetail', {
-        examDoc: item,
-        answerDoc: answerItem,
+        examDocId: item.id,
       });
     } catch (err) {
       console.error('Error fetching data: ', err);
