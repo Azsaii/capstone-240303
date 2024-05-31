@@ -96,7 +96,10 @@ const styles = StyleSheet.create({
 });
 
 const PracticeResult = ({ route, navigation }) => {
-  const { userChoices, problems, answers, examId } = route.params; // 선택 답안
+  const { userChoices, problems, examDocId } = route.params; // 선택 답안
+  const [answers, setAnswers] = useState([]); // 답 정보
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+  
   const choicesArray = Object.entries(userChoices);
   const [showOnlyWrong, setShowOnlyWrong] = useState(false); // 오답만 보기 여부
 
@@ -113,8 +116,6 @@ const PracticeResult = ({ route, navigation }) => {
 
   const [wrongIndexes, setWrongIndexes] = useState(new Array(50).fill(-1)); // 오답 인덱스
   const [totalScore, setTotalScrore] = useState(100);
-
-  //let newWrongTypes = initialState.wrongTypes;
 
   // 로그인 정보
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
@@ -169,6 +170,37 @@ const PracticeResult = ({ route, navigation }) => {
     ];
     return types.indexOf(typeName);
   }
+
+  // 답 정보 가져오기 - answer only round는 해설 없음
+  useEffect(() => {
+    const fetchAnswers = async () => {
+      try {
+        const alist = [];
+        const answerCollection = collection(
+          firestore,
+          'answer only round',
+          examDocId,
+          examDocId
+        );
+
+        const answerSnapshot = await getDocs(answerCollection);
+        answerSnapshot.forEach((answerDoc) => {
+          alist.push({ id: answerDoc.id, data: answerDoc.data() });
+        });
+        setAnswers(alist);
+      } catch (err) {
+        console.error('Error fetching answer data: ', err);
+      }
+    };
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      await fetchAnswers();
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [examDocId]);
 
   // 새 오답 분류 정보 저장
   useEffect(() => {
@@ -384,7 +416,7 @@ const PracticeResult = ({ route, navigation }) => {
     const problem = problems.find((problem) => problem.id === index);
     navigation.navigate('ProblemCommentary', {
       problem: problem,
-      answer: answer,
+      index: index,
     });
   };
 
