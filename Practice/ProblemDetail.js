@@ -9,6 +9,7 @@ import {
   Alert,
   LogBox,
   Dimensions,
+  Platform,
 } from 'react-native';
 import {
   collection,
@@ -344,6 +345,7 @@ const ProblemDetail = ({ route, navigation }) => {
               flexDirection: 'row',
               justifyContent: 'space-between',
               marginBottom: 10,
+              marginTop: Platform.OS === 'ios' ? 60 : 0, // ios일 때 스타일 적용
             }}
           >
             <Text style={styles.idText}>{formattedId}</Text>
@@ -362,15 +364,16 @@ const ProblemDetail = ({ route, navigation }) => {
           <View style={styles.line} />
           {problems.length > 0 && (
             <>
-              <ScrollView>
-                {problems[currentIndex].data.img && (
-                  <Image
-                    style={{ width: '100%', height: imageSize.height }}
-                    source={{ uri: problems[currentIndex].data.img }}
-                    resizeMode="contain"
-
-                  />
-                )}
+              <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+                <View style={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  {problems[currentIndex].data.img && (
+                    <Image
+                      style={{ width: '100%', height: imageSize.height }}
+                      source={{ uri: problems[currentIndex].data.img }}
+                      resizeMode="contain"
+                    />
+                  )}
+                </View>
               </ScrollView>
               <View style={styles.buttonContainer}>
                 {[1, 2, 3, 4, 5].map((number) => (
