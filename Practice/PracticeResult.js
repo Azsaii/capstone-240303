@@ -99,7 +99,7 @@ const PracticeResult = ({ route, navigation }) => {
   const { userChoices, problems, examDocId } = route.params; // 선택 답안
   const [answers, setAnswers] = useState([]); // 답 정보
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
-  
+
   const choicesArray = Object.entries(userChoices);
   const [showOnlyWrong, setShowOnlyWrong] = useState(false); // 오답만 보기 여부
 
@@ -204,6 +204,7 @@ const PracticeResult = ({ route, navigation }) => {
 
   // 새 오답 분류 정보 저장
   useEffect(() => {
+    if (answers.length === 0) return;
     const updatedWrongEras = [...newWrongEras];
     const updatedWrongTypes = [...newWrongTypes];
     let saveWrongIndexes = new Array(50).fill(1);
@@ -240,7 +241,7 @@ const PracticeResult = ({ route, navigation }) => {
     }
     setWrongIndexes(saveWrongIndexes);
     setTotalScrore(score);
-  }, [isLoggedIn]);
+  }, [isLoggedIn, answers]);
 
   // 오답 업데이트
   useEffect(() => {
@@ -344,6 +345,12 @@ const PracticeResult = ({ route, navigation }) => {
           }
         } else {
           console.log('No such document!');
+          // 문서가 존재하지 않는 경우, 새 문서 생성
+          await setDoc(wrongRef, {
+            era: new Array(9).fill(0),
+            type: new Array(11).fill(0),
+          });
+          console.log('Document successfully created with initial data.');
           fetchData();
         }
       } catch (error) {
@@ -352,7 +359,7 @@ const PracticeResult = ({ route, navigation }) => {
     };
 
     fetchData();
-  }, [isLoggedIn]);
+  }, []);
 
   // 상태변수에 기존 데이터 저장
   function updateStateFromSnapshot(data, key, setStateFunction, newValues) {
@@ -412,7 +419,6 @@ const PracticeResult = ({ route, navigation }) => {
 
   // 해설 버튼 클릭 시 이동
   const handleCommentary = (index) => {
-    const answer = answers.find((answer) => answer.id === index);
     const problem = problems.find((problem) => problem.id === index);
     navigation.navigate('ProblemCommentary', {
       problem: problem,
@@ -451,9 +457,8 @@ const PracticeResult = ({ route, navigation }) => {
             >
               {`선택: ${value}`}
             </Text>
-            <Text style={styles.answer}>{`정답: ${
-              answer ? answer.data.answer : '정답 정보 없음'
-            }`}</Text>
+            <Text style={styles.answer}>{`정답: ${answer ? answer.data.answer : '정답 정보 없음'
+              }`}</Text>
           </View>
           <TouchableOpacity
             style={styles.explanationButton}
