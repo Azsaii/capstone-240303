@@ -9,7 +9,7 @@ import {
   Alert,
   LogBox,
   Dimensions,
-  Platform,
+  Platform
 } from 'react-native';
 import {
   collection,
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   },
   controlButtonContainer: {
     flexDirection: 'row',
+    marginBottom: 30,
     justifyContent: 'space-between',
   },
   controlButton: {
@@ -345,7 +346,7 @@ const ProblemDetail = ({ route, navigation }) => {
               flexDirection: 'row',
               justifyContent: 'space-between',
               marginBottom: 10,
-              marginTop: Platform.OS === 'ios' ? 60 : 0, // ios일 때 스타일 적용
+              marginTop: Platform.OS === 'ios' ? 60 : 0, // iOS 일 때만 marginTop 적용
             }}
           >
             <Text style={styles.idText}>{formattedId}</Text>
@@ -364,7 +365,7 @@ const ProblemDetail = ({ route, navigation }) => {
           <View style={styles.line} />
           {problems.length > 0 && (
             <>
-              <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+              <ScrollView style={{flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
                 <View style={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
                   {problems[currentIndex].data.img && (
                     <Image
