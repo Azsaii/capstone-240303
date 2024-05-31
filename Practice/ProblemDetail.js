@@ -311,6 +311,24 @@ const ProblemDetail = ({ route, navigation }) => {
     }
   };
 
+  useEffect(() => {
+    if (problems.length > 0 && problems[currentIndex].data.img) {
+      const imgUri = problems[currentIndex].data.img;
+
+      // 이미지의 원본 크기를 가져옴
+      Image.getSize(imgUri, (width, height) => {
+        const screenWidth = Dimensions.get('window').width;
+        const scaledHeight = (height / width) * screenWidth;
+        setImageSize({
+          width: screenWidth,
+          height: scaledHeight,
+        });
+      }, (error) => {
+        console.error(`Failed to get image size: ${error}`);
+      });
+    }
+  }, [problems, currentIndex]);
+
   return (
     <View style={styles.container}>
       {isLoading ? (
@@ -350,15 +368,7 @@ const ProblemDetail = ({ route, navigation }) => {
                     style={{ width: '100%', height: imageSize.height }}
                     source={{ uri: problems[currentIndex].data.img }}
                     resizeMode="contain"
-                    onLoad={(event) => {
-                      const { width, height } = event.nativeEvent.source;
-                      const screenWidth = Dimensions.get('window').width;
-                      const scaledHeight = (height / width) * screenWidth;
-                      setImageSize({
-                        width: screenWidth,
-                        height: scaledHeight,
-                      });
-                    }}
+
                   />
                 )}
               </ScrollView>
