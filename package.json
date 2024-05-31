@@ -62,7 +62,8 @@
     "react-select-material-ui": "^9.3.1",
     "redux": "^5.0.1",
     "rn-sliding-up-panel": "^2.4.6",
-    "victory-native": "^36.9.2"
+    "victory-native": "^36.9.2",
+    "react-native-pager-view": "6.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0"
