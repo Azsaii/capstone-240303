@@ -112,8 +112,8 @@ const ProblemDetail = ({ route, navigation }) => {
     'Non-serializable values were found in the navigation state',
   ]); // 경고창 안뜨게 하기
 
-  useEffect(()=>{
-    if(problems.length !== 0) {
+  useEffect(() => {
+    if (problems.length !== 0) {
       const id = String(problems[currentIndex]?.id);
       console.log('problems: ');
       console.log(problems);
@@ -301,10 +301,11 @@ const ProblemDetail = ({ route, navigation }) => {
       const saveBookMarkArray = indexBookMark.map((id) => {
         return id + examDoc.id * 100 + 1;
       });
-    }
-    if (saveBookMarkArray.length === 0) {
-      // 북마크 없으면 바로 네비게이트
-      setIsBookmarkSaved(true);
+
+      if (saveBookMarkArray.length === 0) {
+        // 북마크 없으면 바로 네비게이트
+        setIsBookmarkSaved(true);
+      }
     }
 
     setFinalBookMark(saveBookMarkArray); // 북마크 저장 후 네비게이트
