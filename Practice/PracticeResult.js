@@ -256,7 +256,7 @@ const PracticeResult = ({ route, navigation }) => {
         // 기존 오답 정보 삭제
         const batch = writeBatch(firestore);
         querySnapshot.forEach((item) => {
-          if (item.id.substring(0, 2) === examId) {
+          if (item.id.substring(0, 2) === examDocId) {
             const docRef = doc(
               firestore,
               'users',
@@ -272,7 +272,7 @@ const PracticeResult = ({ route, navigation }) => {
 
         // 현재 오답 인덱스에 회차정보를 더해서 저장 예) 0 -> 6101, 1 -> 6102, ...
         for (let i = 0; i < 50; i++) {
-          if (wrongIndexes[i] === 0) newIds.push(examId * 100 + i + 1);
+          if (wrongIndexes[i] === 0) newIds.push(examDocId * 100 + i + 1);
         }
 
         try {
@@ -288,7 +288,7 @@ const PracticeResult = ({ route, navigation }) => {
             await setDoc(itemRef, {});
           });
 
-          console.log('All items saved successfully.');
+          console.log('All wrong ploblems saved successfully.');
         } catch (error) {
           console.error('Data could not be saved. ' + error);
         }
@@ -419,6 +419,7 @@ const PracticeResult = ({ route, navigation }) => {
 
   // 해설 버튼 클릭 시 이동
   const handleCommentary = (index) => {
+    const answer = answers.find((answer) => answer.id === index);
     const problem = problems.find((problem) => problem.id === index);
     navigation.navigate('ProblemCommentary', {
       problem: problem,
@@ -473,25 +474,28 @@ const PracticeResult = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>총점: {totalScore}</Text>
-      <View style={styles.line} />
+      {isLoading ? (<></>) : (<>
+        <Text style={styles.title}>총점: {totalScore}</Text>
+        <View style={styles.line} />
 
-      <View style={{ alignItems: 'flex-end' }}>
-        <TouchableOpacity
-          style={styles.showButton}
-          onPress={() => setShowOnlyWrong(!showOnlyWrong)}
-        >
-          <Text style={styles.showButtonText}>
-            {showOnlyWrong ? '전부 표시' : '틀린 문제만 표시'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={{ alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            style={styles.showButton}
+            onPress={() => setShowOnlyWrong(!showOnlyWrong)}
+          >
+            <Text style={styles.showButtonText}>
+              {showOnlyWrong ? '전부 표시' : '틀린 문제만 표시'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-      <FlatList
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item[0]}
-      />
+        <FlatList
+          data={filteredData}
+          renderItem={renderItem}
+          keyExtractor={(item) => item[0]}
+        />
+      </>)}
+
     </View>
   );
 };

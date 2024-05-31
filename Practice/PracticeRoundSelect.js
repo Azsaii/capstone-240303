@@ -3,7 +3,6 @@ import { View, FlatList, StyleSheet } from 'react-native';
 import { Card, Title } from 'react-native-paper';
 import { collection, getDocs } from 'firebase/firestore';
 import { firestore } from '../firebaseConfig';
-import { X } from '@mui/icons-material';
 
 const styles = StyleSheet.create({
   container: {
@@ -45,7 +44,7 @@ const PracticeRoundSelect = ({ navigation }) => {
       answerRoundSnapshot.forEach((doc) => {
         if (doc.id == item.id) answerItem = { id: doc.id, ref: doc.ref };
       });
-   
+
       // 가져온 답안 데이터를 ProblemDetail 화면으로 전달
       navigation.navigate('ProblemDetail', {
         examDocId: item.id,
@@ -62,7 +61,7 @@ const PracticeRoundSelect = ({ navigation }) => {
       </Card.Content>
     </Card>
   );
-    // 네비게이트할 때 item 등의 직렬화 문제로 안되는거같음. 확인하기.
+  // 네비게이트할 때 item 등의 직렬화 문제로 안되는거같음. 확인하기.
   return (
     <View style={styles.container}>
       <FlatList

@@ -92,8 +92,10 @@ const styles = StyleSheet.create({
 const ProblemDetail = ({ route, navigation }) => {
   const { examDocId } = route.params;
   const [problems, setProblems] = useState([]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userChoices, setUserChoices] = useState({});
+
   const [indexBookMark, setIndexBookMark] = useState([]); // 북마크 인덱스 저장
   const [finalBookMark, setFinalBookMark] = useState([]); // 최종적으로 db에 반영할 북마크
   const [isBookmarkSaved, setIsBookmarkSaved] = useState(false); // 최종 북마크 저장 확인
@@ -107,23 +109,12 @@ const ProblemDetail = ({ route, navigation }) => {
   const isWeb = useSelector((state) => state.isWeb); // 웹 앱 구분
 
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 }); // 동적 이미지 크기변화를 위한 변수
-  const [formattedId, setFormattedId] = useState('');
+
+  const id = String(problems[currentIndex]?.id);
+  const formattedId = `${id.slice(0, 2)}회차 ${parseInt(id.slice(2))}번`;
   LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
   ]); // 경고창 안뜨게 하기
-
-  useEffect(() => {
-    if (problems.length !== 0) {
-      const id = String(problems[currentIndex]?.id);
-      console.log('problems: ');
-      console.log(problems);
-      console.log('id: ' + id);
-      setFormattedId(`${id.slice(0, 2)}회차 ${parseInt(id.slice(2))}번`);
-    }
-    else {
-      console.log('test')
-    }
-  }, [problems, currentIndex])
 
   useEffect(() => {
     if (userEmail) {
@@ -135,7 +126,6 @@ const ProblemDetail = ({ route, navigation }) => {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        console.log('examDocId: ' + examDocId);
         const plist = [];
         const problemCollection = collection(
           firestore,
@@ -177,38 +167,17 @@ const ProblemDetail = ({ route, navigation }) => {
     try {
       const querySnapshot = await getDocs(bookMarkRef);
 
-      // 기존 회차의 북마크 정보 삭제
-      const batch = writeBatch(firestore);
-      querySnapshot.forEach((item) => {
-        if (item.id.substring(0, 2) === examDoc.id) {
-          const docRef = doc(
-            firestore,
-            'users',
-            userEmail,
-            'bookMark',
-            item.id
-          );
-          batch.delete(docRef);
-        }
-      });
-      await batch.commit(); // Batch 작업 실행으로 모든 문서 일괄 삭제
-      console.log('All existing bookmarks deleted.');
-
       // 6101, 6103, 6201, 6335, ... 등 북마크 중 회차에 맞는 id만 필터링
       const filteredIds = [];
-      const originIds = [];
       querySnapshot.forEach((doc) => {
-        if (doc.id.substring(0, 2) === examDoc.id.substring(0, 2)) {
+        if (doc.id.substring(0, 2) === examDocId.substring(0, 2)) {
           filteredIds.push(doc.id);
-        } else {
-          originIds.push(doc.id);
         }
       });
-      setOriginBookMark(originIds);
 
       // 북마크를 인덱스 형태로 추가 저장. 예) 6101 -> 0, 6102 -> 1, ...
       const indexArray = filteredIds.map((id) => {
-        return id - examDoc.id * 100 - 1;
+        return id - examDocId * 100 - 1;
       });
       setIndexBookMark(indexArray);
 
@@ -217,6 +186,7 @@ const ProblemDetail = ({ route, navigation }) => {
       console.error('Error fetching bookmarks: ', error);
     }
   };
+
   useEffect(() => {
     fetchBookmarks();
   }, [userId]);
@@ -255,7 +225,7 @@ const ProblemDetail = ({ route, navigation }) => {
   // 최종적으로 북마크 저장 완료 후 결과 화면으로 이동
   useEffect(() => {
     if (isBookmarkSaved) {
-      navigation.navigate('ProblemDetail', {
+      navigation.navigate('PracticeResult', {
         userChoices: userChoices,
         problems: problems,
         examDocId: examDocId,
@@ -299,28 +269,30 @@ const ProblemDetail = ({ route, navigation }) => {
       // 로그인 되었을 떄만 북마크 저장
       // originBookMark 상태변수 업데이트 시 useEffect에 의해 저장 로직 실행됨.
       const saveBookMarkArray = indexBookMark.map((id) => {
-        return id + examDoc.id * 100 + 1;
+        return id + examDocId * 100 + 1;
       });
 
       if (saveBookMarkArray.length === 0) {
         // 북마크 없으면 바로 네비게이트
         setIsBookmarkSaved(true);
       }
-    }
 
-    setFinalBookMark(saveBookMarkArray); // 북마크 저장 후 네비게이트
+      setFinalBookMark(saveBookMarkArray); // 북마크 저장 후 네비게이트
+    } else {
+      setIsBookmarkSaved(true);
+    }
   };
 
   // 제출 확인 창
   const handleSubmit = (dataRef) => {
     if (isWeb) {
-      const userConfirmed = window.confirm(
-        '제출 확인',
-        '답을 제출하시겠습니까?'
-      );
-      if (userConfirmed) {
-        saveBookMarkAndNavigate();
-      }
+      // const userConfirmed = window.confirm(
+      //   '제출 확인',
+      //   '답을 제출하시겠습니까?'
+      // );
+      // if (userConfirmed) {
+      //   saveBookMarkAndNavigate();
+      // }
     } else {
       // userChoices를 PracticeResult 화면으로 전달
       Alert.alert('제출 확인', '답을 제출하시겠습니까?', [
