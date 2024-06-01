@@ -7,8 +7,8 @@ const initialState = {
   userEmail: '',
   userName: '',
   isWeb: false,
-  //serverPath: 'http://localhost:8080/',
-  serverPath: 'http://52.79.56.22:8080/',
+  serverPath: 'http://localhost:8080/',
+  //serverPath: 'http://52.79.56.22:8080/', // ec2 배포 시 서버 주소입니다.
 };
 
 // 액션 타입 정의
