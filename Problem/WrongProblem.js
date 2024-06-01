@@ -8,7 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import { FontAwesome, Feather } from '@expo/vector-icons';
+import { FontAwesome, Feather, MaterialIcons } from '@expo/vector-icons';
 import { firestore } from '../firebaseConfig';
 import {
   getFirestore,
@@ -25,13 +25,26 @@ const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
 function WrongProblem({ userEmail }) {
+  const navigation = useNavigation();
   return (
     <Stack.Navigator initialRouteName="WrongProblemTab">
       <Stack.Screen
         name="다시풀기"
         component={WrongProblemTab}
         initialParams={{ userEmail: userEmail }}
-        options={{ headerTitleAlign: 'center' }}
+        options={{
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{ marginLeft: 10 }}
+              onPress={() => {
+                navigation.goBack();
+              }}
+            >
+              <MaterialIcons name="arrow-back" size={30} color="black" />
+            </TouchableOpacity>
+          ),
+        }}
       />
       <Stack.Screen
         name="BasicProblem"
