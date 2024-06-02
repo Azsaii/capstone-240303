@@ -120,8 +120,8 @@ const PostDetail = ({ route, navigation }) => {
   const isLoggedIn = useSelector((state) => state.isLoggedIn);
   const userEmail = useSelector((state) => state.userEmail);
   const { boardName, selectedItem } = route.params;
+  const [postCreatingTime, setPostCreatingTime] = useState();
   const selectedItemId = selectedItem.id;
-  let postCreatingTime = '';
   const isWeb = useSelector((state) => state.isWeb);
   const scrollViewRef = useRef();
 
@@ -224,7 +224,7 @@ const PostDetail = ({ route, navigation }) => {
 
   useEffect(() => {
     if (post) {
-      postCreatingTime = formatDate(post.postId.split('_')[1]);
+      setPostCreatingTime(formatDate(post.postId.split('_')[1]));
       fetchComments(); // 댓글 가져오기
     }
   }, [post]);
@@ -257,8 +257,6 @@ const PostDetail = ({ route, navigation }) => {
   //     off(commentsRef, listener);
   //   };
   // }, []);
-
-
 
   const handleSubmit = () => {
     // 댓글 저장
@@ -432,100 +430,105 @@ const PostDetail = ({ route, navigation }) => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="always"
       >
-        {isLoading ? (<></>) : (<>
-          <View style={styles.content}>
-            {/* {isWeb && (
+        {isLoading ? (
+          <></>
+        ) : (
+          <>
+            <View style={styles.content}>
+              {/* {isWeb && (
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Icon name="arrow-u-left-top" size={30} color="#000" />
             </TouchableOpacity>
           )} */}
-            <Text style={styles.title}>{post.title}</Text>
-            <View style={styles.idRow}>
-              <View>
-                <Text style={{ fontSize: 15 }}>
-                  작성자: {post ? post.userEmail.split('@')[0] : ''}
-                </Text>
-                <Text style={{ fontSize: 15 }}>
-                  작성일: {post ? postCreatingTime : ''}
-                </Text>
-              </View>
+              <Text style={styles.title}>{post.title}</Text>
+              <View style={styles.idRow}>
+                <View>
+                  <Text style={{ fontSize: 15 }}>
+                    작성자: {post ? post.userEmail.split('@')[0] : ''}
+                  </Text>
+                  <Text style={{ fontSize: 15 }}>
+                    작성일: {post ? postCreatingTime : ''}
+                  </Text>
+                </View>
 
-              <View style={styles.buttonRow}>
-                {userEmail === post.userEmail ? (
-                  <>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: '#004EA2' }]}
-                      onPress={handleUpdate}
-                    >
-                      <Text style={styles.buttonText}>수정</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button, { backgroundColor: '#DF243B' }]}
-                      onPress={handleDelete}
-                    >
-                      <Text style={styles.buttonText}>삭제</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : null}
-              </View>
-            </View>
-            <View style={styles.contentText}>
-              <RenderHTML source={{ html: post.body }} />
-            </View>
-          </View>
-
-          {commentList.length > 0 && <View style={styles.line} />}
-
-          {commentList.length > 0 &&
-            commentList.map((item, index) => (
-              <Card key={index} style={styles.card}>
-                <Card.Content>
-                  <View style={styles.commentRow}>
-                    <View style={{ width: '85%' }}>
-                      <Text style={{ fontSize: 12 }}>
-                        {item.userEmail.split('@')[0]}
-                      </Text>
-                      <Text style={{ fontSize: 16 }}>{item.comment}</Text>
-                    </View>
-                    {userEmail === item.userEmail ? (
+                <View style={styles.buttonRow}>
+                  {userEmail === post.userEmail ? (
+                    <>
                       <TouchableOpacity
-                        style={[styles.commentDeleteButton]}
-                        onPress={() => handleCommentDelete(item.id)}
+                        style={[styles.button, { backgroundColor: '#004EA2' }]}
+                        onPress={handleUpdate}
+                      >
+                        <Text style={styles.buttonText}>수정</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.button, { backgroundColor: '#DF243B' }]}
+                        onPress={handleDelete}
                       >
                         <Text style={styles.buttonText}>삭제</Text>
                       </TouchableOpacity>
-                    ) : null}
-                  </View>
-                </Card.Content>
-              </Card>
-            ))}
+                    </>
+                  ) : null}
+                </View>
+              </View>
+              <View style={styles.contentText}>
+                <RenderHTML source={{ html: post.body }} />
+              </View>
+            </View>
 
-          {commentList.length > 0 && <View style={styles.line} />}
+            {commentList.length > 0 && <View style={styles.line} />}
 
-          <View style={styles.inputRow}>
-            <TextInput // 댓글 입력창
-              style={styles.commentInput}
-              placeholder={
-                isLoggedIn ? '댓글 작성하기' : '로그인하고 댓글을 작성해보세요!'
-              }
-              onChangeText={(text) => setComment(text)} // 입력값을 상태로 관리
-              value={comment}
-              editable={isLoggedIn}
-            />
-            <TouchableOpacity
-              style={styles.writeButton}
-              onPress={() => {
-                isLoggedIn
-                  ? // 글 작성 페이지로 이동
-                  handleSubmit()
-                  : navigation.navigate('Login');
-              }}
-            >
-              <Icon name="comment" size={24} color="#35439c" />
-            </TouchableOpacity>
-          </View>
-        </>)}
+            {commentList.length > 0 &&
+              commentList.map((item, index) => (
+                <Card key={index} style={styles.card}>
+                  <Card.Content>
+                    <View style={styles.commentRow}>
+                      <View style={{ width: '85%' }}>
+                        <Text style={{ fontSize: 12 }}>
+                          {item.userEmail.split('@')[0]}
+                        </Text>
+                        <Text style={{ fontSize: 16 }}>{item.comment}</Text>
+                      </View>
+                      {userEmail === item.userEmail ? (
+                        <TouchableOpacity
+                          style={[styles.commentDeleteButton]}
+                          onPress={() => handleCommentDelete(item.id)}
+                        >
+                          <Text style={styles.buttonText}>삭제</Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  </Card.Content>
+                </Card>
+              ))}
 
+            {commentList.length > 0 && <View style={styles.line} />}
+
+            <View style={styles.inputRow}>
+              <TextInput // 댓글 입력창
+                style={styles.commentInput}
+                placeholder={
+                  isLoggedIn
+                    ? '댓글 작성하기'
+                    : '로그인하고 댓글을 작성해보세요!'
+                }
+                onChangeText={(text) => setComment(text)} // 입력값을 상태로 관리
+                value={comment}
+                editable={isLoggedIn}
+              />
+              <TouchableOpacity
+                style={styles.writeButton}
+                onPress={() => {
+                  isLoggedIn
+                    ? // 글 작성 페이지로 이동
+                      handleSubmit()
+                    : navigation.navigate('Login');
+                }}
+              >
+                <Icon name="comment" size={24} color="#35439c" />
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
